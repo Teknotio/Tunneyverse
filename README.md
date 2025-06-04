@@ -1,6 +1,6 @@
 # sound_project
 
-A new Flutter project.
+AI sound project.
 
 ## Getting Started
 
