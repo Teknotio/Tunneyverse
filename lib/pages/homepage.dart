@@ -383,7 +383,7 @@ class AboutSection extends StatelessWidget {
             left: 106,
             top: 133,
             child: Text(
-              'What is Wasa?',
+              'What is Tuneyverse?',
               style: TextStyle(
                 color: const Color(0xFFE9E6F8),
                 fontSize: 70,
@@ -401,7 +401,7 @@ class AboutSection extends StatelessWidget {
               width: 498,
               height: 253,
               child: Text(
-                "At The Wasa’s App, we’re redefining the karaoke and music practice experience. Using advanced AI, we empower users to transform any song or video into a fully customizable karaoke track by removing vocals, preserving instrumentals, and syncing lyrics with precision.",
+                "At The Tuneyverse App, we’re redefining the karaoke and music practice experience. Using advanced AI, we empower users to transform any song or video into a fully customizable karaoke track by removing vocals, preserving instrumentals, and syncing lyrics with precision.",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
