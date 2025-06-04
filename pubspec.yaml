@@ -1,0 +1,32 @@
+name: tuneyverse
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dropdown_button2: ^2.3.9
+  font_awesome_flutter: ^10.7.0
+  video_player: ^2.8.2
+  cupertino_icons: ^1.0.8
+  assets:
+    - assets/videos/vid1.mp4
+    - assets/videos/vid2.mp4
+    - assets/videos/vid3.mp4
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/Inter-Regular.ttf
