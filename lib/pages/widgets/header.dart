@@ -1,246 +1,262 @@
 import 'package:flutter/material.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 
-class ResponsiveHeader extends StatefulWidget {
-  const ResponsiveHeader({super.key});
+class ResponsiveHeader extends StatelessWidget {
+  final VoidCallback? onLogin;
+  final VoidCallback? onSignUp;
 
-  @override
-  State<ResponsiveHeader> createState() => _ResponsiveHeaderState();
-}
-
-class _ResponsiveHeaderState extends State<ResponsiveHeader> {
-  String selectedLanguage = 'English';
-
-  final List<String> languages = [
-    'English',
-    'French',
-    'Arabic',
-    'Chinese',
-    'Spanish',
-  ];
+  const ResponsiveHeader({super.key, this.onLogin, this.onSignUp});
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 900;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 800) {
+          return _DesktopHeader(onLogin: onLogin, onSignUp: onSignUp);
+        } else {
+          return _MobileHeader(onLogin: onLogin, onSignUp: onSignUp);
+        }
+      },
+    );
+  }
+}
 
+// LOGO + NAME WIDGET (for reuse)
+class _LogoName extends StatelessWidget {
+  const _LogoName();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Image.asset(
+          'assets/images/logo.png',
+          height: 40,
+          width: 40,
+        ),
+        const SizedBox(width: 10),
+        const Text(
+          'Tuneyverse',
+          style: TextStyle(
+            color: Color(0xFF50449A),
+            fontSize: 28.15,
+            fontFamily: 'DM Sans',
+            fontWeight: FontWeight.w700,
+            height: 1.06,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// DESKTOP HEADER
+class _DesktopHeader extends StatelessWidget {
+  final VoidCallback? onLogin;
+  final VoidCallback? onSignUp;
+  const _DesktopHeader({this.onLogin, this.onSignUp});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
+      height: 72,
+      padding: const EdgeInsets.symmetric(horizontal: 64),
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Logo
+          const _LogoName(),
           Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6D5DD3), Color(0xFF4DB7F2)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              _NavButton(title: 'Home'),
+              _NavButton(title: 'Features', hasDropdown: true),
+              _NavButton(title: 'Pricing'),
+              _NavButton(title: 'Support', hasDropdown: true),
+              const SizedBox(width: 32),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF50449A)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                ),
+                onPressed: onLogin ?? () {},
+                child: const Text(
+                  'Login',
+                  style: TextStyle(
+                    color: Color(0xFF50449A),
+                    fontSize: 16,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                child: const Center(
-                  child: Icon(Icons.music_note, color: Colors.white, size: 22),
-                ),
               ),
-              const SizedBox(width: 8),
-              const Text(
-                "Tunneyverse",
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 20,
-                  color: Color(0xff211A3F),
+              const SizedBox(width: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF50449A),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                ),
+                onPressed: onSignUp ?? () {},
+                child: const Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             ],
           ),
-          if (!isMobile) ...[
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _MenuItem(title: "Karoke Package", hasDropdown: true),
-                  const SizedBox(width: 24),
-                  _MenuItem(title: "Apps"),
-                  const SizedBox(width: 24),
-                  _MenuItem(title: "Pricing", hasDropdown: true),
-                  const SizedBox(width: 24),
-                  _MenuItem(title: "Guides"),
-                  const SizedBox(width: 24),
-                  _MenuItem(title: "About"),
-                  const SizedBox(width: 24),
-                  _MenuItem(title: "Blog"),
-                ],
-              ),
-            ),
-            _LanguageSelector(
-              selectedLanguage: selectedLanguage,
-              languages: languages,
-              onChanged: (value) {
-                setState(() {
-                  selectedLanguage = value!;
-                });
-              },
-            ),
-            const SizedBox(width: 16),
-            const _GetStartedButton(),
-          ],
-          if (isMobile) const Spacer(),
-          if (isMobile)
-            IconButton(
-              icon: const Icon(Icons.menu, color: Color(0xFF6D5DD3), size: 30),
-              onPressed: () {},
-            ),
         ],
       ),
     );
   }
 }
 
-class _MenuItem extends StatelessWidget {
+class _NavButton extends StatelessWidget {
   final String title;
   final bool hasDropdown;
-  const _MenuItem({required this.title, this.hasDropdown = false});
+  final VoidCallback? onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.bold,
-            color: Color(0xff211A3F),
-            fontSize: 16,
-          ),
-        ),
-        if (hasDropdown)
-          const Icon(Icons.keyboard_arrow_down, size: 18, color: Color(0xff211A3F)),
-      ],
-    );
-  }
-}
-
-class _LanguageSelector extends StatelessWidget {
-  final String selectedLanguage;
-  final List<String> languages;
-  final ValueChanged<String?> onChanged;
-
-  const _LanguageSelector({
-    required this.selectedLanguage,
-    required this.languages,
-    required this.onChanged,
-    super.key,
+  const _NavButton({
+    required this.title,
+    this.hasDropdown = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 44, // match button height
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton2<String>(
-          isExpanded: false,
-          customButton: Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(26),
-              border: Border.all(color: const Color(0xFFE6E6EB), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: TextButton(
+        onPressed: onTap ?? () {},
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  selectedLanguage,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xff211A3F),
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(width: 5),
-                const Icon(Icons.keyboard_arrow_down, color: Color(0xff211A3F)),
-              ],
-            ),
-          ),
-          dropdownStyleData: DropdownStyleData(
-            width: 140,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.10),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-          ),
-          items: languages
-              .map((lang) => DropdownMenuItem<String>(
-                    value: lang,
-                    child: Text(
-                      lang,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xff211A3F),
-                        fontSize: 15,
-                      ),
-                    ),
-                  ))
-              .toList(),
-          value: selectedLanguage,
-          onChanged: onChanged,
+            if (hasDropdown) ...[
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_drop_down, size: 20, color: Colors.black),
+            ]
+          ],
         ),
       ),
     );
   }
 }
 
-class _GetStartedButton extends StatelessWidget {
-  const _GetStartedButton();
+// MOBILE HEADER
+class _MobileHeader extends StatelessWidget {
+  final VoidCallback? onLogin;
+  final VoidCallback? onSignUp;
+  const _MobileHeader({this.onLogin, this.onSignUp});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 44,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF50449A), // CTA color
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(26),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          elevation: 0,
+    // Using Builder to get Scaffold context for Drawer
+    return Builder(
+      builder: (ctx) => Container(
+        width: double.infinity,
+        height: 64,
+        padding: const EdgeInsets.only(left: 20, right: 12),
+        color: Colors.white,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const _LogoName(),
+            IconButton(
+              icon: const Icon(Icons.menu, size: 32, color: Color(0xFF50449A)),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ],
         ),
-        onPressed: () {
-          debugPrint("Get started button pressed!");
-          // Replace with your navigation or logic
-        },
-        child: const Text(
-          "Get started",
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: Colors.white,
-          ),
+      ),
+    );
+  }
+}
+
+// MOBILE DRAWER
+// ignore: unused_element
+class _AppDrawer extends StatelessWidget {
+  const _AppDrawer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+          children: [
+            const _LogoName(),
+            const SizedBox(height: 20),
+            _NavButton(
+              title: 'Home',
+              onTap: () => Navigator.of(context).maybePop(),
+            ),
+            _NavButton(
+              title: 'Features',
+              hasDropdown: true,
+              onTap: () => Navigator.of(context).maybePop(),
+            ),
+            _NavButton(
+              title: 'Pricing',
+              onTap: () => Navigator.of(context).maybePop(),
+            ),
+            _NavButton(
+              title: 'Support',
+              hasDropdown: true,
+              onTap: () => Navigator.of(context).maybePop(),
+            ),
+            const Divider(height: 32),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF50449A)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              ),
+              onPressed: () {}, // You can also use onLogin here if you want
+              child: const Text(
+                'Login',
+                style: TextStyle(
+                  color: Color(0xFF50449A),
+                  fontSize: 16,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF50449A),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              ),
+              onPressed: () {}, // Or use onSignUp
+              child: const Text(
+                'Sign Up',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

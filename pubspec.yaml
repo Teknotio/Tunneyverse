@@ -13,10 +13,7 @@ dependencies:
   font_awesome_flutter: ^10.7.0
   video_player: ^2.8.2
   cupertino_icons: ^1.0.8
-  assets:
-    - assets/videos/vid1.mp4
-    - assets/videos/vid2.mp4
-    - assets/videos/vid3.mp4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -30,3 +27,19 @@ flutter:
       fonts:
         - asset: assets/fonts/Inter-Bold.ttf
         - asset: assets/fonts/Inter-Regular.ttf
+
+  assets:
+    - assets/videos/vid1.mp4
+    - assets/videos/vid2.mp4
+    - assets/videos/vid3.mp4
+    - assets/images/logo.png
+    - assets/images/img1.png
+    - assets/images/img2.png
+    - assets/images/img3.png
+    - assets/images/img4.png
+    - assets/images/img5.png
+    - assets/images/img6.png
+    - assets/images/innovate1.png
+    - assets/images/innovate2.png
+    - assets/images/innovate3.png
+    - assets/images/logo.png
