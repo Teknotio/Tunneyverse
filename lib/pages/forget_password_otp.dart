@@ -115,7 +115,7 @@ class _OtpHeader extends StatelessWidget {
   const _OtpHeader({required this.isDesktop});
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 508,
       child: Column(
         children: [
@@ -250,7 +250,6 @@ class _ResendRow extends StatelessWidget {
                       fontSize: 14,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),

@@ -110,7 +110,7 @@ class _ForgotHeader extends StatelessWidget {
   const _ForgotHeader({required this.isDesktop});
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 508,
       child: Column(
         children: [

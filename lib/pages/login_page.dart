@@ -37,7 +37,7 @@ class SignInPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // FORM
-                          Container(
+                          SizedBox(
                             width: isDesktop ? double.infinity : 307,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +147,7 @@ class _SignInHeaderRow extends StatelessWidget {
             tooltip: "Back",
           ),
           const SizedBox(width: 16),
-          Container(
+          SizedBox(
             width: 508,
             height: 101,
             child: Stack(

@@ -108,7 +108,7 @@ class _NewPasswordHeader extends StatelessWidget {
   const _NewPasswordHeader({required this.isDesktop});
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 508,
       child: Column(
         children: [

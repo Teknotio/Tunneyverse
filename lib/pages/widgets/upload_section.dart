@@ -14,7 +14,7 @@ class UploadSection extends StatelessWidget {
   }
 }
 
-// DESKTOP VIEW
+// DESKTOP VIEW (unchanged)
 class _DesktopUploadSection extends StatelessWidget {
   const _DesktopUploadSection();
 
@@ -189,18 +189,18 @@ class _DesktopUploadSection extends StatelessWidget {
   }
 }
 
-// MOBILE VIEW
+// MOBILE VIEW (updated and ready)
 class _MobileUploadSection extends StatelessWidget {
   const _MobileUploadSection();
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
     return Container(
-      width: 375,
+      width: width < 375 ? width : 375, // Responsive, max 375px
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-      decoration: const BoxDecoration(
-        color: Color(0xFF30285C),
-      ),
+      color: const Color(0xFF30285C),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -231,6 +231,7 @@ class _MobileUploadSection extends StatelessWidget {
             ),
             child: Stack(
               children: [
+                // Section Title
                 const Positioned(
                   left: 11,
                   top: 36,
@@ -249,36 +250,20 @@ class _MobileUploadSection extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Select Files Button
-                Positioned(
-                  left: 20,
-                  top: 502,
+                // Paste File Here
+                const Positioned(
+                  left: 58.34,
+                  top: 248.63,
                   child: SizedBox(
-                    width: 295,
-                    height: 60,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A5ACD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        padding: EdgeInsets.zero,
-                      ),
-                      onPressed: () {
-                        // TODO: Add file picker logic here
-                      },
-                      child: const Center(
-                        child: Text(
-                          'Select Files',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w400,
-                            height: 2.29,
-                          ),
-                        ),
+                    width: 219,
+                    child: Text(
+                      'Paste File Here',
+                      style: TextStyle(
+                        color: Color(0x191B191C),
+                        fontSize: 32,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        height: 0.50,
                       ),
                     ),
                   ),
@@ -323,20 +308,36 @@ class _MobileUploadSection extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Paste File Here
-                const Positioned(
-                  left: 58.34,
-                  top: 248.63,
+                // Select Files Button
+                Positioned(
+                  left: 20,
+                  top: 502,
                   child: SizedBox(
-                    width: 219,
-                    child: Text(
-                      'Paste File Here',
-                      style: TextStyle(
-                        color: Color(0x191B191C),
-                        fontSize: 32,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        height: 0.50,
+                    width: 295,
+                    height: 60,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A5ACD),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        padding: EdgeInsets.zero,
+                      ),
+                      onPressed: () {
+                        // TODO: Add file picker logic here
+                      },
+                      child: const Center(
+                        child: Text(
+                          'Select Files',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            height: 2.29,
+                          ),
+                        ),
                       ),
                     ),
                   ),

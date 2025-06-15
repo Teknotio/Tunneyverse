@@ -137,7 +137,7 @@ class _SignUpHeaderRow extends StatelessWidget {
             tooltip: "Back",
           ),
           const SizedBox(width: 16),
-          Container(
+          SizedBox(
             width: 508,
             height: 101,
             child: Stack(

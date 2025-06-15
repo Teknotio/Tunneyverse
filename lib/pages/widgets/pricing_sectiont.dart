@@ -49,39 +49,41 @@ class PricingSection extends StatelessWidget {
                   _Toggle(isDesktop: isDesktop),
                   SizedBox(height: isDesktop ? 48 : 48),
                   isDesktop
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Expanded(
-                              child: _PricingCard(
-                                title: "Basic Plan",
-                                price: "\$19/mo",
-                                titleFontSize: 20,
-                                priceFontSize: 56,
-                                features: _basicFeatures,
+                      ? IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: const [
+                              Expanded(
+                                child: _PricingCard(
+                                  title: "Basic Plan",
+                                  price: "\$19/mo",
+                                  titleFontSize: 20,
+                                  priceFontSize: 56,
+                                  features: _basicFeatures,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 32),
-                            Expanded(
-                              child: _PricingCard(
-                                title: "Business Plan",
-                                price: "\$29/mo",
-                                titleFontSize: 20,
-                                priceFontSize: 56,
-                                features: _businessFeatures,
+                              SizedBox(width: 32),
+                              Expanded(
+                                child: _PricingCard(
+                                  title: "Business Plan",
+                                  price: "\$29/mo",
+                                  titleFontSize: 20,
+                                  priceFontSize: 56,
+                                  features: _businessFeatures,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 32),
-                            Expanded(
-                              child: _PricingCard(
-                                title: "Enterprise Plan",
-                                price: "\$49/mo",
-                                titleFontSize: 20,
-                                priceFontSize: 56,
-                                features: _enterpriseFeatures,
+                              SizedBox(width: 32),
+                              Expanded(
+                                child: _PricingCard(
+                                  title: "Enterprise Plan",
+                                  price: "\$49/mo",
+                                  titleFontSize: 20,
+                                  priceFontSize: 56,
+                                  features: _enterpriseFeatures,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         )
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -263,79 +265,84 @@ class _PricingCard extends StatelessWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: const Color(0xFFF0EFFA),
-                fontSize: titleFontSize,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w700,
-                height: 1.4,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              price,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: const Color(0xFFF0EFFA),
-                fontSize: priceFontSize,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w700,
-                height: 1.2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
           Column(
-            children: features
-                .map(
-                  (f) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.check, color: Color(0xFFF0EFFA), size: 22),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            f,
-                            style: TextStyle(
-                              color: Color(0xFFF0EFFA),
-                              fontSize: 16,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFFF0EFFA),
+                    fontSize: titleFontSize,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    height: 1.4,
                   ),
-                )
-                .toList(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  price,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFFF0EFFA),
+                    fontSize: priceFontSize,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Column(
+                children: features
+                    .map(
+                      (f) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.check, color: Color(0xFFF0EFFA), size: 22),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                f,
+                                style: const TextStyle(
+                                  color: Color(0xFFF0EFFA),
+                                  fontSize: 16,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: TextButton(
               style: TextButton.styleFrom(
-                backgroundColor: Color(0xFFF0EFFA),
+                backgroundColor: const Color(0xFFF0EFFA),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(0),
                 ),
               ),
               onPressed: () {},
-              child: Text(
+              child: const Text(
                 'Get started',
                 style: TextStyle(
                   color: Color(0xFF251F48),
