@@ -47,7 +47,7 @@ class _DesktopPricingHeroSection extends StatelessWidget {
             Expanded(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1280),
-                child: Container(
+                child: SizedBox(
                   width: double.infinity,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -57,7 +57,7 @@ class _DesktopPricingHeroSection extends StatelessWidget {
                       Expanded(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 768),
-                          child: Container(
+                          child: SizedBox(
                             width: double.infinity,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -137,7 +137,7 @@ class _MobilePricingHeroSection extends StatelessWidget {
           children: [
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1280),
-              child: Container(
+              child: SizedBox(
                 width: double.infinity,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -146,7 +146,7 @@ class _MobilePricingHeroSection extends StatelessWidget {
                   children: [
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 768),
-                      child: Container(
+                      child: SizedBox(
                         width: double.infinity,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,

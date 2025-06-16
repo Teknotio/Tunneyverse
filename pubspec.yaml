@@ -17,6 +17,7 @@ dependencies:
   flutter_dropzone: ^3.0.5
   flutter_sound: ^9.1.0
   just_audio: ^0.9.37
+  flutter_svg: ^2.0.10
 
 dev_dependencies:
   flutter_test:
@@ -54,3 +55,13 @@ flutter:
     - assets/images/select_image.png
     - assets/images/download_image.png
     - assets/video_preview.mp4
+    - assets/hero_about.png
+    - assets/about_main.png
+    - assets/team.png
+    - assets/why_choose.png
+    - assets/mission_vision.png
+    - assets/contact_us.png
+    - assets/icons/facebook.svg
+    - assets/icons/x.svg
+    - assets/icons/link-alt.svg
+    - assets/icons/linkedin.svg

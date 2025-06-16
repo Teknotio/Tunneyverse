@@ -547,7 +547,7 @@ class _MobileFeatureTable extends StatelessWidget {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

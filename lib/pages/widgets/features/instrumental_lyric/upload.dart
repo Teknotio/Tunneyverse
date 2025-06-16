@@ -1,6 +1,5 @@
 // Unified cross-platform widget for Song and Lyric Video Upload
 import 'package:flutter/material.dart';
-import 'dart:io' as io;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dropzone/flutter_dropzone.dart';

@@ -3,16 +3,18 @@ import 'package:tuneyverse/pages/about_us.dart';
 import 'package:tuneyverse/pages/contact%20page.dart';
 import 'package:tuneyverse/pages/homepage.dart';
 import 'package:tuneyverse/pages/login_page.dart';
+import 'package:tuneyverse/pages/pricing_page.dart';
 import 'package:tuneyverse/pages/signup.dart';
-import 'package:tuneyverse/pages/widgets/faq_section.dart';
+import 'package:tuneyverse/pages/widgets/features/candi.dart';
+import 'package:tuneyverse/pages/widgets/features/features.dart';
+import 'package:tuneyverse/pages/widgets/features/manual.dart';
+import 'package:tuneyverse/pages/widgets/features/sound_quality.dart';
 import 'package:tuneyverse/pages/widgets/header.dart';
 import 'package:tuneyverse/pages/widgets/footer.dart';
-import 'package:tuneyverse/pages/widgets/pricing/customer_testimonials.dart';
-import 'package:tuneyverse/pages/widgets/pricing/hero_section.dart';
 import 'package:tuneyverse/pages/widgets/pricing_sectiont.dart';
 
-class PricingPage extends StatelessWidget {
-  const PricingPage({super.key});
+class ChorusAndInstrumental extends StatelessWidget {
+  const ChorusAndInstrumental({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,20 +22,23 @@ class PricingPage extends StatelessWidget {
       backgroundColor: const Color(0xFFF0EFFA),
       endDrawer: AppDrawer(
         onHome: () {
-          Navigator.of(context).pushAndRemoveUntil(
+          Navigator.pushReplacement(
+            context,
             MaterialPageRoute(builder: (_) => const HomePage()),
-            (route) => false,
           );
         },
         onPricing: () {
-          // Already here; maybe show a snackbar if needed
-        },
-        onAboutUs: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AboutUs()),
+            MaterialPageRoute(builder: (_) => const PricingPage()),
           );
         },
+        onAboutUs: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUs()),
+              );
+            },
         onContactUs: () {
           Navigator.push(
             context,
@@ -56,15 +61,6 @@ class PricingPage extends StatelessWidget {
       body: Column(
         children: [
           ResponsiveHeader(
-            onHome: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const HomePage()),
-                (route) => false,
-              );
-            },
-            onPricing: () {
-              // Do nothing; already here, or show a snackbar if needed.
-            },
             onLogin: () {
               Navigator.push(
                 context,
@@ -77,16 +73,27 @@ class PricingPage extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
             },
+            onAboutUs: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUs()),
+              );
+            },
             onContactUs: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ContactPage()),
               );
             },
-            onAboutUs: () {
-              Navigator.push(
+            onPricing: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PricingPage()),
+              );
+            },
+            onHome: () {
+              Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const AboutUs()),
+                MaterialPageRoute(builder: (_) => const HomePage()),
               );
             },
           ),
@@ -94,10 +101,11 @@ class PricingPage extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: const [
-                PricingHeroSection(imageAsset: 'assets/images/select_image.png'),
-                PricingSection(),
-                CustomerTestimonialsSection(),
-                FAQSection(),
+                ChorusAndInstrumentalWidget(),
+                SoundQualityWidget(),
+                FeaturesSection(),
+                ManualStepsWidget(),
+                PricingSection(),             
                 ResponsiveFooter(),
               ],
             ),
@@ -108,10 +116,12 @@ class PricingPage extends StatelessWidget {
   }
 }
 
-// MAIN (for testing, remove from production)
+
+
+// MAIN
 void main() {
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: PricingPage(),
+    home: ChorusAndInstrumental(),
   ));
 }

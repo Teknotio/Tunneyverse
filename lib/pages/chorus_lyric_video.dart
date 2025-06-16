@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tuneyverse/pages/about_us.dart';
+import 'package:tuneyverse/pages/contact%20page.dart';
+import 'package:tuneyverse/pages/homepage.dart';
 import 'package:tuneyverse/pages/login_page.dart';
+import 'package:tuneyverse/pages/pricing_page.dart';
 import 'package:tuneyverse/pages/signup.dart';
 import 'package:tuneyverse/pages/widgets/features/chorus_lyric/upload.dart';
 import 'package:tuneyverse/pages/widgets/features/chorus_lyric/video_quality.dart';
@@ -12,10 +16,48 @@ import 'package:tuneyverse/pages/widgets/pricing_sectiont.dart';
 class ChorusLyricVideo extends StatelessWidget {
   const ChorusLyricVideo({super.key});
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0EFFA),
+      endDrawer: AppDrawer(
+        onHome: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
+        },
+        onPricing: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PricingPage()),
+          );
+        },
+        onAboutUs: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUs()),
+              );
+            },
+        onContactUs: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ContactPage()),
+          );
+        },
+        onLogin: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SignInPage()),
+          );
+        },
+        onSignUp: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SignUpPage()),
+          );
+        },
+      ),
       body: Column(
         children: [
           ResponsiveHeader(
@@ -31,6 +73,30 @@ class ChorusLyricVideo extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
             },
+            onAboutUs: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUs()),
+              );
+            },
+            onContactUs: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ContactPage()),
+              );
+            },
+            onPricing: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PricingPage()),
+              );
+            },
+            onHome: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const HomePage()),
+              );
+            },
+            // Optionally, implement onHome/onPricing as well if needed
           ),
           Expanded(
             child: ListView(
