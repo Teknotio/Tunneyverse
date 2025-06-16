@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tuneyverse/pages/ChorusAndInstrumental.dart';
+import 'package:tuneyverse/pages/chorusandinstrumental.dart';
 import 'package:tuneyverse/pages/chorus_lyric_video.dart';
 import 'package:tuneyverse/pages/instrumental_lyric_video.dart';
 import 'package:tuneyverse/pages/song_instrumental.dart';
