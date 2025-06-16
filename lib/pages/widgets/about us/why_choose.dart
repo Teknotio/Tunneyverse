@@ -16,7 +16,7 @@ class WhyChooseSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 112),
             clipBehavior: Clip.antiAlias,
             decoration: const BoxDecoration(
-              color: const Color(0xFFF0EFFA), // Background color
+              color: Color(0xFFF0EFFA), // Background color
             ),
             child: Center(
               child: ConstrainedBox(

@@ -548,7 +548,7 @@ class AppDrawer extends StatefulWidget {
   final VoidCallback? onAboutUs;
   final VoidCallback? onContactUs;
 
-  const AppDrawer({
+  const AppDrawer({super.key, 
     this.onHome,
     this.onLogin,
     this.onSignUp,

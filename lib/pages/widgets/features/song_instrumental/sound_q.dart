@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tuneyverse/pages/widgets/features/song_instrumental/clean.dart';
-import 'package:tuneyverse/pages/widgets/features/song_instrumental/dirty.dart';
+import 'package:tuneyverse/pages/widgets/features/clean_record.dart';
+import 'package:tuneyverse/pages/widgets/features/og_record.dart';
 
 class SoundQuality extends StatelessWidget {
   const SoundQuality({super.key});
@@ -30,15 +30,15 @@ class SoundQuality extends StatelessWidget {
                 style: TextStyle(
                   color: Color(0xFF1E1E1E),
                   fontSize: 54,
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Roboto',
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
-                    // Comparison Row Centered
+          // Comparison Row Centered
           Positioned(
-            top: 210,
+            top: 161,
             left: 0,
             right: 0,
             child: Center(
@@ -47,37 +47,16 @@ class SoundQuality extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
-                    OriginalRecording(), // <-- use your widget
-                    CleanedRecording(),  // <-- use your widget
+                    OriginalRecordingWidget(),
+                    CleanedRecordingWidget(),
                   ],
-                ),
-              ),
-            ),
-          ),
-          // Subtitle Centered
-          const Positioned(
-            top: 110,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: SizedBox(
-                width: 1254,
-                child: Text(
-                  ' AI-powered vocal remover is useful for a wide range of users',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF1E1E1E),
-                    fontSize: 54,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w600,
-                  ),
                 ),
               ),
             ),
           ),
           // User Groups Section Centered
           Positioned(
-            top: 570,
+            top: 441,
             left: 0,
             right: 0,
             child: Center(
@@ -97,33 +76,21 @@ class SoundQuality extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Main Title (already centered)
-            const Text(
+            Text(
               'Sound Quality',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF1E1E1E),
+                color: const Color(0xFF1E1E1E),
                 fontSize: 40,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w600,
-                height: 1.20,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              ' AI-powered vocal remover is useful for a wide range of users',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF1E1E1E),
-                fontSize: 32,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w700,
                 height: 1.20,
               ),
             ),
             const SizedBox(height: 24),
-            const OriginalRecording(),
+            const OriginalRecordingWidget(),
             const SizedBox(height: 16),
-            const CleanedRecording(),
+            const CleanedRecordingWidget(),
             const SizedBox(height: 32),
             _userGroups(isDesktop: false),
           ],
@@ -138,7 +105,7 @@ class SoundQuality extends StatelessWidget {
         'iconAsset': 'assets/icons/dj.png',
         'title': 'Music Producers & DJs',
         'desc':
-            'Extract vocals or instrumentals with precision to create remixes, mashups, or sample packs without spending hours manually separating tracks. Save time and focus on creativity by starting with clean stems.',
+            'Extract vocals with precision to create remixes, mashups, or sample packs without spending hours manually separating tracks. Save time and focus on creativity by starting with clean stems.',
       },
       {
         'iconAsset': 'assets/icons/rec.png',
@@ -164,65 +131,96 @@ class SoundQuality extends StatelessWidget {
       // DESKTOP VIEW - centered with fixed width
       return SizedBox(
         width: 1298,
-        child: Wrap(
-          spacing: 24,
-          runSpacing: 40,
-          children: groups.map((g) {
-            return SizedBox(
-              width: 622,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Avatar with image asset
-                  Container(
-                    width: 120,
-                    height: 120,
-                    margin: const EdgeInsets.only(right: 24),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(60),
-                    ),
-                    child: Center(
-                      child: Image.asset(
-                        g['iconAsset'] as String,
-                        width: 56,
-                        height: 56,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
+        height: 685,
+        child: Stack(
+          children: [
+            // Subtitle centered at the top
+            Positioned(
+              left: 22,
+              top: 0,
+              child: SizedBox(
+                width: 1254,
+                child: Text(
+                  ' AI-powered vocal remover is useful for a wide range of users',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF1E1E1E),
+                    fontSize: 54,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w600,
                   ),
-                  // Text content
-                  SizedBox(
-                    width: 478,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          g['title']!,
-                          style: const TextStyle(
-                            color: Color(0xFF1E1E1E),
-                            fontSize: 28,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          g['desc']!,
-                          style: const TextStyle(
-                            color: Color(0xFF1B191C),
-                            fontSize: 22,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w400,
-                            height: 1.36,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            );
-          }).toList(),
+            ),
+            // The user group boxes in a grid
+            Positioned(
+              left: 0,
+              top: 213,
+              child: SizedBox(
+                width: 1298,
+                child: Wrap(
+                  spacing: 24,
+                  runSpacing: 40,
+                  children: groups.map((g) {
+                    return SizedBox(
+                      width: 622,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Avatar with image asset
+                          Container(
+                            width: 120,
+                            height: 120,
+                            margin: const EdgeInsets.only(right: 24),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(60),
+                            ),
+                            child: Center(
+                              child: Image.asset(
+                                g['iconAsset'] as String,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          // Text content
+                          SizedBox(
+                            width: 478,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  g['title']!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF1E1E1E),
+                                    fontSize: 28,
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Text(
+                                  g['desc']!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF1B191C),
+                                    fontSize: 22,
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.36,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     } else {
@@ -231,6 +229,24 @@ class SoundQuality extends StatelessWidget {
         width: double.infinity,
         child: Column(
           children: [
+            // Subtitle
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: SizedBox(
+                width: 335,
+                child: Text(
+                  ' AI-powered vocal remover is useful for a wide range of users',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF1E1E1E),
+                    fontSize: 40,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    height: 1.20,
+                  ),
+                ),
+              ),
+            ),
             ...groups.map((g) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 32),
@@ -279,7 +295,7 @@ class SoundQuality extends StatelessWidget {
                                 fontSize: 20,
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w400,
-                                height: 1.36,
+                                height: 1.50,
                               ),
                             ),
                           ],
