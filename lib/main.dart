@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF50449A)),
       ),
-      home: TuneyverseLandingPage(), // <-- Set your homepage widget here
+      home: HomePage(), // <-- Set your homepage widget here
       debugShowCheckedModeBanner: false,
     );
   }
