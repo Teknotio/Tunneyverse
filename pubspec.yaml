@@ -13,17 +13,21 @@ dependencies:
   font_awesome_flutter: ^10.7.0
   video_player: ^2.8.2
   cupertino_icons: ^1.0.8
-  file_picker: ^6.2.0
-  flutter_dropzone: ^3.0.5
+  file_picker: ^10.2.0
+  flutter_dropzone: ^4.2.1
   flutter_sound: ^9.1.0
-  just_audio: ^0.9.37
+  just_audio: ^0.10.4
   flutter_svg: ^2.0.10
-  audio_waveforms: ^1.0.4
+  audio_waveforms: ^1.0.5
+  just_audio_windows: ^0.2.1
+  dotted_border: ^2.1.0
+  
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
@@ -66,3 +70,16 @@ flutter:
     - assets/icons/x.svg
     - assets/icons/link-alt.svg
     - assets/icons/linkedin.svg
+    - assets/audio/original.mp3
+    - assets/audio/og.mp3
+    - assets/icons/chorus_instrumental.png
+    - assets/icons/chorus_lyric.png
+    - assets/icons/instrumental_lyric.png
+    - assets/icons/song_lyric.png
+    - assets/icons/song_instrumental.png
+    - assets/icons/subscription.png
+    - assets/avatar.png
+    - assets/icons/instrum_lyric.png
+    - assets/icons/vid_lyric.png
+    - assets/images/artwork.png
+    - assets/icons/account.png

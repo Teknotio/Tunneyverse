@@ -397,7 +397,7 @@ class _ContactUsSectionState extends State<ContactUsSection> {
                       Checkbox(
                         value: _acceptTerms,
                         onChanged: (v) => setState(() => _acceptTerms = v ?? false),
-                        activeColor: Colors.black,
+                        activeColor: const Color(0xFF50449A),
                       ),
                       const Text(
                         "I accept the Terms",

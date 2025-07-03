@@ -118,10 +118,3 @@ class ChorusAndInstrumental extends StatelessWidget {
 
 
 
-// MAIN
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: ChorusAndInstrumental(),
-  ));
-}

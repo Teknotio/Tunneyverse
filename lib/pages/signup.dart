@@ -248,8 +248,8 @@ class _SignUpFormState extends State<_SignUpForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Email address or username',
+                Text(
+          'Username',
           style: TextStyle(
             color: Colors.black,
             fontSize: 13,
@@ -260,7 +260,35 @@ class _SignUpFormState extends State<_SignUpForm> {
         SizedBox(height: 8),
         TextField(
           decoration: InputDecoration(
-            hintText: 'Email address or username',
+            hintText: 'Username',
+            hintStyle: TextStyle(
+              color: const Color(0xFF6A6A6A),
+              fontSize: 15,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 20),
+        Text(
+          'Email address',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 13,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: 8),
+        TextField(
+          decoration: InputDecoration(
+            hintText: 'Email address',
             hintStyle: TextStyle(
               color: const Color(0xFF6A6A6A),
               fontSize: 15,

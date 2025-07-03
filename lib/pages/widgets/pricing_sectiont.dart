@@ -41,15 +41,16 @@ class PricingSection extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1280),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _Header(isDesktop: isDesktop),
-                  SizedBox(height: isDesktop ? 80 : 48),
-                  _Toggle(isDesktop: isDesktop),
-                  SizedBox(height: isDesktop ? 48 : 48),
-                  isDesktop
-                      ? IntrinsicHeight(
+              child: isDesktop
+                  // ----- DESKTOP: Use Column as before -----
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _Header(isDesktop: isDesktop),
+                        const SizedBox(height: 80),
+                        _Toggle(isDesktop: isDesktop),
+                        const SizedBox(height: 48),
+                        IntrinsicHeight(
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: const [
@@ -84,37 +85,44 @@ class PricingSection extends StatelessWidget {
                               ),
                             ],
                           ),
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: const [
-                            _PricingCard(
-                              title: "Basic Plan",
-                              price: "\$19/mo",
-                              titleFontSize: 18,
-                              priceFontSize: 40,
-                              features: _basicFeatures,
-                            ),
-                            SizedBox(height: 32),
-                            _PricingCard(
-                              title: "Business Plan",
-                              price: "\$29/mo",
-                              titleFontSize: 18,
-                              priceFontSize: 40,
-                              features: _businessFeatures,
-                            ),
-                            SizedBox(height: 32),
-                            _PricingCard(
-                              title: "Enterprise Plan",
-                              price: "\$49/mo",
-                              titleFontSize: 18,
-                              priceFontSize: 40,
-                              features: _enterpriseFeatures,
-                            ),
-                          ],
                         ),
-                ],
-              ),
+                      ],
+                    )
+                  // ----- MOBILE: SCROLLABLE COLUMN -----
+                  : SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: const [
+                          _Header(isDesktop: false),
+                          SizedBox(height: 48),
+                          _Toggle(isDesktop: false),
+                          SizedBox(height: 48),
+                          _PricingCard(
+                            title: "Basic Plan",
+                            price: "\$19/mo",
+                            titleFontSize: 18,
+                            priceFontSize: 40,
+                            features: _basicFeatures,
+                          ),
+                          SizedBox(height: 32),
+                          _PricingCard(
+                            title: "Business Plan",
+                            price: "\$29/mo",
+                            titleFontSize: 18,
+                            priceFontSize: 40,
+                            features: _businessFeatures,
+                          ),
+                          SizedBox(height: 32),
+                          _PricingCard(
+                            title: "Enterprise Plan",
+                            price: "\$49/mo",
+                            titleFontSize: 18,
+                            priceFontSize: 40,
+                            features: _enterpriseFeatures,
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ),
         );
