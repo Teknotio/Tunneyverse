@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tuneyverse/pages/chorus_and_instrumental/upload_card.dart';
+import 'package:tuneyverse/pages/chorus_and_instrumental/user_dashboard.dart';
 import 'package:tuneyverse/pages/widgets/contact_us.dart';
 import 'package:tuneyverse/pages/widgets/faq_section.dart';
 import 'package:tuneyverse/pages/widgets/pricing_sectiont.dart';
@@ -18,7 +19,7 @@ class AccountSettings extends StatefulWidget {
   State<AccountSettings> createState() => _AccountSettingsState();
 }
 
-enum DashboardSection { sidebar, support }
+enum DashboardSection { sidebar, support, accountsettings}
 
 
 class _AccountSettingsState extends State<AccountSettings> {
@@ -68,7 +69,12 @@ class _AccountSettingsState extends State<AccountSettings> {
                     setState(() {
                       currentSection = DashboardSection.support; // UPDATED
                     });
-                  }
+                  },
+                  onAccountSettings: () {
+                    setState(() {
+                      currentSection = DashboardSection.accountsettings; // UPDATED
+                    });
+                  },
                 ),
               ),
             ),
@@ -158,7 +164,7 @@ class _AccountSettingsState extends State<AccountSettings> {
     return Center(child: Text("No page selected"));
   }
 
-  if (index == 2) {
+  if (index == 1) {
     return SingleChildScrollView(
       child: Center(
         child: PricingSection(),
@@ -166,6 +172,7 @@ class _AccountSettingsState extends State<AccountSettings> {
     );
   }
 
+  
 
 
   // -------- The fix: always pass sectionIndex for navigation --------
@@ -181,13 +188,12 @@ class _AccountSettingsState extends State<AccountSettings> {
   return isMobile
       ? DashboardContentMobile(
           title: sidebarItems[index]!.text,
-          sectionIndex: index,
-          onUpload: uploadHandler, // Or your upload handler
+          sectionIndex: index, // Or your upload handler
         )
       : _DashboardContent(
           title: sidebarItems[index]!.text,
           sectionIndex: index,
-          onUpload: uploadHandler, // Or your upload handler
+          // Or your upload handler
         );
 }
 
@@ -218,8 +224,10 @@ class UserDashboardMobileHeader extends StatelessWidget {
           // Logo and Tuneyverse text (left)
           GestureDetector(
             onTap: () {
-              // <<<<< THIS IS THE IMPROVED NAVIGATION >>>>>
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => HomepageDashboard()),
+                (route) => false,
+              );
             },
             child: Container(
               clipBehavior: Clip.antiAlias,
@@ -328,12 +336,14 @@ class DrawerMenu extends StatelessWidget {
   final List<_SidebarItemData?> items;
   final Function(int) onItemSelected;
   final VoidCallback? onSupport; // <-- ADDED
+  final VoidCallback? onAccountSettings; // <-- ADDED
 
   const DrawerMenu({
     super.key,
     required this.items,
     required this.onItemSelected,
     this.onSupport,
+    this.onAccountSettings, // <-- ADDED
   });
 
   @override
@@ -421,149 +431,186 @@ class DrawerMenu extends StatelessWidget {
 
 class DashboardContentMobile extends StatelessWidget {
   final String title;
-  final int sectionIndex;      // <--- ADDED
-  final VoidCallback onUpload; // <--- ADDED
+  final int sectionIndex;
 
   const DashboardContentMobile({
     super.key,
     required this.title,
     required this.sectionIndex,
-    required this.onUpload,
   });
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width.clamp(250, 375);
-    double scale(double designSize) => (screenWidth / 375) * designSize;
+    double screenWidth = MediaQuery.of(context).size.width.clamp(250, 375);
+    double scale(double size) => (screenWidth / 375) * size;
 
-    return Container(
-      width: 375,
-      height: 694,
-      padding: EdgeInsets.symmetric(horizontal: scale(20)),
-      decoration: const BoxDecoration(
-        color: Color(0xFFE9E6F8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: scale(24)),
-          // Header Row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: const Color(0xFF30285C),
-                  fontSize: scale(14),
-                  fontFamily: 'DM Sans',
-                  fontWeight: FontWeight.w700,
-                  height: 2.12,
+    if (sectionIndex == 0) {
+      // ACCOUNT SECTION
+      return Container(
+        width: 375,
+        height: 694,
+        padding: EdgeInsets.symmetric(horizontal: scale(20)),
+        decoration: const BoxDecoration(
+          color: Color(0xFFE9E6F8),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: scale(32)),
+            // Avatar Centered
+            Center(
+              child: Container(
+                width: scale(90),
+                height: scale(90),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: const DecorationImage(
+                    image: AssetImage("assets/avatar.png"),
+                    fit: BoxFit.cover,
+                  ),
+                  border: Border.all(color: Colors.white, width: scale(3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
-              ),
-              const Spacer(),
-              TuneyverseButton(
-                filled: true,
-                text: "Upload",
-                iconSize: scale(24),
-                fontSize: scale(18),
-                borderRadius: scale(6),
-                circleBorderWidth: scale(3),
-                padding: EdgeInsets.symmetric(
-                  horizontal: scale(12),
-                  vertical: scale(6),
-                ),
-                onTap: onUpload, // <--- UPDATED
-              ),
-            ],
-          ),
-          SizedBox(height: scale(32)),
-          // Search Bar
-          Container(
-            width: double.infinity,
-            height: scale(56),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE9E6F8),
-              borderRadius: BorderRadius.circular(scale(4)),
-              border: Border.all(
-                width: 1,
-                color: const Color(0xFF79747E),
               ),
             ),
-            padding: EdgeInsets.symmetric(horizontal: scale(2)),
-            alignment: Alignment.center,
-            child: Row(
-              children: [
-                Container(
-                  width: scale(48),
-                  height: scale(48),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Icon(Icons.search, color: const Color(0xFF656B8D), size: scale(28)),
-                ),
-                SizedBox(width: scale(8)),
-                Expanded(
-                  child: TextField(
+            SizedBox(height: scale(18)),
+            // Name & Email Centered
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    'Jonathan Freeman',
                     style: TextStyle(
-                      color: const Color(0xFF6A6A6A),
-                      fontSize: scale(15),
-                      fontFamily: 'Inter',
+                      color: const Color(0xFF30285C),
+                      fontSize: scale(22),
+                      fontFamily: 'DM Sans',
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: scale(2)),
+                  Text(
+                    'jonathanfreeman@gmail.com',
+                    style: TextStyle(
+                      color: const Color(0xFF30285C),
+                      fontSize: scale(13),
+                      fontFamily: 'DM Sans',
                       fontWeight: FontWeight.w400,
                     ),
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Search',
-                      hintStyle: TextStyle(
-                        color: const Color(0xFF6A6A6A),
-                        fontSize: scale(15),
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                      ),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: scale(12)),
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: scale(64)),
-          // Empty State Section
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'Start adding songs \nUpload from local files ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0x80000000),
-                    fontSize: scale(24),
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
+            SizedBox(height: scale(30)),
+            // Account Info Card
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                vertical: scale(24),
+                horizontal: scale(18),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(scale(2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _mobileAccountRow(
+                    label: 'Username',
+                    value: 'Jonathan Freeman',
+                    scale: scale,
                   ),
-                ),
-                SizedBox(height: scale(24)),
-                TuneyverseButton(
-                  filled: false,
-                  text: "Upload",
-                  iconSize: scale(24),
-                  fontSize: scale(18),
-                  borderRadius: scale(6),
-                  circleBorderWidth: scale(3),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: scale(22),
-                    vertical: scale(10),
+                  SizedBox(height: scale(18)),
+                  _mobileAccountRow(
+                    label: 'Email',
+                    value: 'jonathanfreeman@gmail.com',
+                    scale: scale,
                   ),
-                  onTap: onUpload, 
-                ),
-              ],
+                  SizedBox(height: scale(18)),
+                  _mobileAccountRow(
+                    label: 'Password',
+                    value: '************',
+                    scale: scale,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
+
+    // OTHER SECTIONS (e.g. uploads) — you can handle here!
+    return Center(child: Text(title));
   }
+}
+
+Widget _mobileAccountRow({
+  required String label,
+  required String value,
+  required double Function(double) scale,
+}) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      SizedBox(
+        width: scale(80),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: const Color(0xFF251F48),
+            fontSize: scale(16),
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
+      Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(left: scale(10)),
+          child: Text(
+            value,
+            style: TextStyle(
+              color: const Color(0xFF30285C),
+              fontSize: scale(13),
+              fontFamily: 'DM Sans',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+      Container(
+        margin: EdgeInsets.only(left: scale(6)),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF30285C),
+            padding: EdgeInsets.symmetric(
+              horizontal: scale(14),
+              vertical: scale(6),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(scale(2)),
+            ),
+            elevation: 0,
+          ),
+          onPressed: () {},
+          child: Text(
+            'Modify',
+            style: TextStyle(
+              color: const Color(0xFFF0EFFA),
+              fontSize: scale(12),
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
 }
 
 // ------------------ REUSABLE BUTTON CLASS ------------------
@@ -650,6 +697,7 @@ class UserDashboardSidebar extends StatelessWidget {
   final DashboardSection currentSection; // ADDED
   final void Function(int)? onItemTap;
   final VoidCallback? onSupport; // <---- NEW
+  final VoidCallback? onAccountSettings; // <-- Add this
 
   const UserDashboardSidebar({
     super.key,
@@ -657,6 +705,7 @@ class UserDashboardSidebar extends StatelessWidget {
     required this.currentSection, // UPDATED
     this.onItemTap,
     this.onSupport,
+    this.onAccountSettings, // <-- Add this
   });
 
   
@@ -682,27 +731,36 @@ class UserDashboardSidebar extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 16.24, top: 31, bottom: 44),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/logo.png',
-                  width: 32,
-                  height: 32,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Tuneyverse',
-                  style: TextStyle(
-                    color: Color(0xFFF0EFFA),
-                    fontSize: 28.15,
-                    fontFamily: 'DM Sans',
-                    fontWeight: FontWeight.w700,
-                    height: 1.06,
+            child: GestureDetector(
+              onTap: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => HomepageDashboard()),
+                    (route) => false,
+                  );
+                },
+
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.contain,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Tuneyverse',
+                    style: TextStyle(
+                      color: Color(0xFFF0EFFA),
+                      fontSize: 28.15,
+                      fontFamily: 'DM Sans',
+                      fontWeight: FontWeight.w700,
+                      height: 1.06,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -728,6 +786,7 @@ class UserDashboardSidebar extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 18, bottom: 16, top: 4),
             child: UserDashboardSidebarUserInfo(
               onSupport: onSupport,
+              onAccountSettings: onAccountSettings, // <-- Forward the callback
             ),
           ),// User info, dropdown etc.
         ],
@@ -808,7 +867,8 @@ class _SidebarItemState extends State<_SidebarItem> {
 // ------------------- SIDEBAR USER INFO & DROPDOWN -------------------
 class UserDashboardSidebarUserInfo extends StatefulWidget {
   final VoidCallback? onSupport;
-  const UserDashboardSidebarUserInfo({super.key, this.onSupport});
+  final VoidCallback? onAccountSettings;
+  const UserDashboardSidebarUserInfo({super.key, this.onSupport, this.onAccountSettings});
 
 
 
@@ -851,6 +911,7 @@ class _UserDashboardSidebarUserInfoState
                 child: _UserDropdownMenu(
                   onClose: _removeDropdown,
                   onSupport: widget.onSupport,
+                  onAccountSettings: widget.onAccountSettings, // <-- ADD THIS
                 ),
               ),
             ),
@@ -954,7 +1015,9 @@ class _UserDashboardSidebarUserInfoState
 class _UserDropdownMenu extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback? onSupport;
-  const _UserDropdownMenu({required this.onClose, this.onSupport});
+  final VoidCallback? onAccountSettings; // <-- ADD THIS
+
+  const _UserDropdownMenu({required this.onClose, this.onSupport, this.onAccountSettings});
 
 
   @override
@@ -997,7 +1060,9 @@ class _UserDropdownMenu extends StatelessWidget {
               label: item.label,
               color: item.color,
               onTap: () {
-                if (item.label == "Support") {
+                if (item.label == "Account Settings") {
+                  onAccountSettings?.call(); // <-- TRIGGER THE DASHBOARD SWITCH
+                } else if (item.label == "Support") {
                   onSupport?.call();
                 }
                 onClose();
@@ -1084,318 +1149,207 @@ class _DropdownMenuItem {
 // ------------------- DESKTOP MAIN DASHBOARD CONTENT -------------------
 class _DashboardContent extends StatelessWidget {
   final String title;
-  final int sectionIndex;      // <--- ADDED
-  final VoidCallback onUpload; // <--- ADDED
+  final int sectionIndex;
 
   const _DashboardContent({
     super.key,
     required this.title,
     required this.sectionIndex,
-    required this.onUpload,
   });
-  
-  
+
   @override
   Widget build(BuildContext context) {
-    // Get screen width and height
-    final width = MediaQuery.of(context).size.width;
-
-    // Responsive breakpoints
-    final isMobile = width < 600;
-    final isTablet = width >= 600 && width < 1024;
-    final isDesktop = width >= 1024;
-
-    // Responsive paddings and font sizes
-    final horizontalPadding = isMobile ? 16.0 : isTablet ? 32.0 : 48.0;
-    final headerFontSize = isMobile ? 22.0 : isTablet ? 26.0 : 32.0;
-    final sectionFontSize = isMobile ? 16.0 : 20.0;
-
-    return Container(
-      color: const Color(0xFFE9E6F8),
-      width: double.infinity,
-      height: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-        vertical: isMobile ? 24 : 40,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top Row: Title, Search, Upload button (responsive)
-          if (isDesktop || isTablet)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                Expanded(
-                  child: Text(
-                    title,
+    // --- Account Section (Index 0) ---
+    if (sectionIndex == 0) {
+      // Responsive breakpoints
+      final double screenWidth = MediaQuery.of(context).size.width;
+      final double maxCardWidth = 540;
+      final double cardWidth = screenWidth < (maxCardWidth + 80)
+          ? (screenWidth - 64).clamp(300, maxCardWidth)
+          : maxCardWidth;
+      final double avatarSize = screenWidth < 420 ? 72 : 120;
+      final double titleFont = screenWidth < 500 ? 22 : 32;
+      final double labelFont = screenWidth < 500 ? 16 : 20;
+      return Container(
+        width: double.infinity,
+        height: 832,
+        color: const Color(0xFFE9E6F8),
+        child: Stack(
+          children: [
+            // Account Settings Title (top left)
+            Positioned(
+              left: screenWidth < 360 ? 8 : 43,
+              top: 33,
+              child: Text(
+                'Account Settings',
+                style: TextStyle(
+                  color: Color(0xFF30285C),
+                  fontSize: 32,
+                  fontFamily: 'DM Sans',
+                  fontWeight: FontWeight.w700,
+                  height: 0.93,
+                ),
+              ),
+            ),
+            // Centered Content
+            Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  top: screenWidth < 500 ? 40 : 80,
+                  bottom: 60,
+                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Avatar
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: const DecorationImage(
+                        image: AssetImage("assets/avatar.png"),
+                        fit: BoxFit.cover,
+                      ),
+                      border: Border.all(color: Colors.white, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  // Name
+                  const Text(
+                    'Jonathan Freeman',
                     style: TextStyle(
-                      color: const Color(0xFF30285C),
-                      fontSize: headerFontSize,
+                      color: Color(0xFF30285C),
+                      fontSize: 32,
                       fontFamily: 'DM Sans',
                       fontWeight: FontWeight.w700,
-                      height: 1.2,
+                      height: 0.93,
                     ),
                   ),
-                ),
-                SizedBox(width: 16),
-                // Search bar
-                SizedBox(
-                  width: isDesktop ? 220 : 140,
-                  child: DashboardSearchBar(),
-                ),
-                SizedBox(width: 16),
-                // Upload Button
-                SizedBox(
-                  height: 50,
-                  child: UploadButton(
-                    onPressed: onUpload, // <--- UPDATED
-                    borderColor: const Color(0xFF2A2E44),
-                    iconColor: Colors.white,
-                    textColor: Colors.white,
-                    filledBackground: true,
+                  // Email
+                  const Text(
+                    'jonathanfreeman@gmail.com',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF30285C),
+                      fontSize: 16,
+                      fontFamily: 'DM Sans',
+                      fontWeight: FontWeight.w400,
+                      height: 1.86,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          if (isMobile)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: const Color(0xFF30285C),
-                    fontSize: headerFontSize,
-                    fontFamily: 'DM Sans',
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DashboardSearchBar(),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: UploadButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => UploadCard(sectionIndex: 0)),
-                      );
-                    },
-                    borderColor: const Color(0xFF2A2E44),
-                    iconColor: Colors.white,
-                    textColor: Colors.white,
-                    filledBackground: true,
-                  ),
-                ),
-              ],
-            ),
-          if (isMobile)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title, // <--- CHANGED
-                  style: TextStyle(
-                    color: const Color(0xFF30285C),
-                    fontSize: headerFontSize,
-                    fontFamily: 'DM Sans',
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DashboardSearchBar(),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: UploadButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => UploadCard(sectionIndex: 0)),
-                      );
-                    },
-                    borderColor: const Color(0xFF2A2E44),
-                    iconColor: Colors.white,
-                    textColor: Colors.white,
-                    filledBackground: true,
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 48),
-          // Centered Section (responsive)
-          Expanded(
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.all(isMobile ? 16 : 32),
-                constraints: BoxConstraints(
-                  maxWidth: isMobile ? 400 : 500,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Start adding songs \nUpload from local files ',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0x80000000), // Black 50% opacity
-                        fontSize: sectionFontSize,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                        height: 1.4,
+                  const SizedBox(height: 32),
+                  // Account Info Card
+                  Container(
+                    width: cardWidth,
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenWidth < 500 ? 16 : 30,
+                        horizontal: screenWidth < 500 ? 16 : 32,
                       ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: 163,
-                      height: 52,
-                      child: UploadButton(
-                        onPressed: onUpload, // <--- UPDATED
-                        borderColor: const Color(0xFF2A2E44),
-                        iconColor: const Color(0xFF2A2E44),
-                        textColor: const Color(0xFF2A2E44),
-                        filledBackground: false,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _accountRow(label: 'Username', value: 'Jonathan Freeman'),
+                        const SizedBox(height: 24),
+                        _accountRow(label: 'Email', value: 'jonathanfreeman@gmail.com'),
+                        const SizedBox(height: 24),
+                        _accountRow(label: 'Password', value: '************'),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
+            ),
+          ],
+        ),
+      );
+    }
+
+    // --- Subscription Section (Index 1) ---
+    if (sectionIndex == 1) {
+      return SingleChildScrollView(
+        child: Center(
+          child: PricingSection(),
+        ),
+      );
+    }
+
+    // --- Default/Other Section ---
+    return const Center(child: Text('Section not implemented'));
   }
 }
 
-// ------------------- REUSABLE UPLOAD BUTTON -------------------
-class UploadButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final Color borderColor;
-  final Color iconColor;
-  final Color textColor;
-  final double iconSize;
-  final double circleSize;
-  final double fontSize;
-  final bool filledBackground;
-
-  const UploadButton({
-    super.key,
-    this.onPressed,
-    this.borderColor = const Color(0xFF656B8D),
-    this.iconColor = const Color(0xFF656B8D),
-    this.textColor = const Color(0xFF2A2E44),
-    this.iconSize = 20,
-    this.circleSize = 28,
-    this.fontSize = 20,
-    this.filledBackground = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: borderColor),
-        backgroundColor: filledBackground ? borderColor : Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: circleSize,
-            height: circleSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              color: const Color.fromARGB(0, 0, 0, 0),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.arrow_upward_rounded,
-                color: iconColor,
-                size: iconSize,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Upload',
-            style: TextStyle(
-              color: textColor,
-              fontSize: fontSize,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ------------------- REUSABLE SEARCH BAR -------------------
-class DashboardSearchBar extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged<String>? onChanged;
-
-  const DashboardSearchBar({
-    super.key,
-    this.controller,
-    this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 219,
-      height: 46,
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        style: const TextStyle(
-          color: Color(0xFF6A6A6A),
-          fontSize: 15,
-          fontFamily: 'Inter',
-          fontWeight: FontWeight.w400,
-        ),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-          filled: true,
-          fillColor: Color(0xFFE9E6F8), // matches your bg
-          hintText: "Search",
-          hintStyle: const TextStyle(
-            color: Color(0xFF6A6A6A),
-            fontSize: 15,
+// Helper for account rows
+Widget _accountRow({required String label, required String value}) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      SizedBox(
+        width: 130, // consistent label width
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF251F48),
+            fontSize: 20,
             fontFamily: 'Inter',
             fontWeight: FontWeight.w400,
           ),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF656B8D), size: 22),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(2),
-            borderSide: const BorderSide(color: Color(0xFF656B8D), width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(2),
-            borderSide: const BorderSide(color: Color(0xFF656B8D), width: 1.4),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(2),
-            borderSide: const BorderSide(color: Color(0xFF656B8D), width: 1),
+        ),
+      ),
+      Expanded(
+        child: Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFF30285C),
+            fontSize: 16,
+            fontFamily: 'DM Sans',
+            fontWeight: FontWeight.w400,
           ),
         ),
       ),
-    );
-  }
+      _modifyButton(),
+    ],
+  );
 }
+
+// Helper for Modify button
+Widget _modifyButton() {
+  return Container(
+    margin: const EdgeInsets.only(left: 12),
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF30285C),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+        elevation: 0,
+      ),
+      onPressed: () {},
+      child: const Text(
+        'Modify',
+        style: TextStyle(
+          color: Color(0xFFF0EFFA),
+          fontSize: 16,
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    ),
+  );
+}
+
+
+
+
+
+

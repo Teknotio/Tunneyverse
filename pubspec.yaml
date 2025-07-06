@@ -21,6 +21,7 @@ dependencies:
   audio_waveforms: ^1.0.5
   just_audio_windows: ^0.2.1
   dotted_border: ^2.1.0
+  http: ^1.1.0
   
 
 

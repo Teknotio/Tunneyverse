@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tuneyverse/pages/forgot_password.dart';
 import 'package:tuneyverse/pages/signup.dart';
+import 'package:http/http.dart' as http;  // <-- ADDED
+import 'dart:convert';                     // <-- ADDED
+
 
 
 class SignInPage extends StatelessWidget {
@@ -249,6 +252,80 @@ class _SignInFormState extends State<_SignInForm> {
   bool rememberMe = false;
   bool obscurePassword = true;
 
+  // <-- ADDED: Controllers and state
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;      // <-- ADDED
+  String? errorMessage;
+
+  @override
+  void dispose() {            // <-- ADDED
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  // <-- ADDED: Login logic
+  Future<void> _handleLogin() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        errorMessage = 'Please fill in all fields';
+        isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.tuneyverse.com/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "email": email,
+          "password": password,
+        }),
+      );
+
+      print("Status: ${response.statusCode}, Body: ${response.body}"); // for debugging
+
+      if (response.statusCode == 200) {
+        // Login successful!
+        // You can store token or user info here if returned by backend
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login successful!')));
+        // TODO: Navigate to dashboard or home page here
+      } else {
+        setState(() {
+          String message = 'Login failed!';
+          try {
+            final resp = json.decode(response.body);
+            if (resp is Map && resp['message'] != null) {
+              message = resp['message'].toString();
+            }
+          } catch (_) {}
+          errorMessage = message;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Network error. Please try again!';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final isDesktop = widget.isDesktop;
@@ -266,6 +343,7 @@ class _SignInFormState extends State<_SignInForm> {
         ),
         SizedBox(height: 8),
         TextField(
+          controller: emailController,
           decoration: InputDecoration(
             hintText: 'Email address or username',
             hintStyle: TextStyle(
@@ -294,6 +372,7 @@ class _SignInFormState extends State<_SignInForm> {
         ),
         SizedBox(height: 8),
         TextField(
+          controller: passwordController,
           obscureText: obscurePassword,
           decoration: InputDecoration(
             hintText: 'Password',
@@ -367,10 +446,21 @@ class _SignInFormState extends State<_SignInForm> {
           ],
         ),
         SizedBox(height: isDesktop ? 18 : 14),
+        // <-- ADDED: Error and loading state
+        if (errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              errorMessage!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        if (isLoading)
+          Center(child: CircularProgressIndicator()),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: isLoading ? null : _handleLogin,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF5548A4),
               foregroundColor: Colors.white,

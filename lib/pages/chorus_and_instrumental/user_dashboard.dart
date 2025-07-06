@@ -3,6 +3,8 @@ import 'package:tuneyverse/pages/chorus_and_instrumental/upload_card.dart';
 import 'package:tuneyverse/pages/widgets/contact_us.dart';
 import 'package:tuneyverse/pages/widgets/faq_section.dart';
 import 'package:tuneyverse/pages/widgets/pricing_sectiont.dart';
+import 'package:tuneyverse/pages/chorus_and_instrumental/account_settings.dart';
+
 
 void main() {
   runApp(const MaterialApp(
@@ -1032,9 +1034,13 @@ class _UserDropdownMenu extends StatelessWidget {
               color: item.color,
               onTap: () {
                 if (item.label == "Support") {
-                  onSupport?.call();
-                }
-                onClose();
+                    onSupport?.call();
+                  } else if (item.label == "Account Settings") {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => AccountSettings()),
+                    );
+                  }
+                  onClose();
               },
             ),
           ),

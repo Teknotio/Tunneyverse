@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:tuneyverse/pages/chorus_and_instrumental/account_settings.dart';
+import 'package:tuneyverse/pages/chorus_and_instrumental/user_dashboard.dart';
 import 'package:tuneyverse/pages/widgets/pricing_sectiont.dart';
 import 'package:tuneyverse/pages/widgets/faq_section.dart';
 import 'package:tuneyverse/pages/widgets/contact_us.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_dropzone/flutter_dropzone.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -185,6 +189,7 @@ return Scaffold(
         selectedIndex: selectedIndex,
         onItemTap: _handleSidebarTap,
         items: sidebarItems, // <-- ADDED
+        currentSection: currentSection, // UPDATED
         onSupport: _handleSupportTap,
       ),
       Expanded(
@@ -230,8 +235,10 @@ class UserDashboardMobileHeader extends StatelessWidget {
           // Logo and Tuneyverse text (left)
           GestureDetector(
             onTap: () {
-              // <<<<< THIS IS THE IMPROVED NAVIGATION >>>>>
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => HomepageDashboard()),
+                (route) => false,
+              );
             },
             child: Container(
               clipBehavior: Clip.antiAlias,
@@ -344,7 +351,9 @@ class DrawerMenu extends StatelessWidget {
                       item: item,
                       selected: idx == selectedIndex, // <-- ADDED
                       onTap: () {
+                        Navigator.pop(context);   // <-- CLOSES THE DRAWER!
                         onItemSelected(idx);
+
                       },
                     );
                   }).toList(),
@@ -422,6 +431,7 @@ class _HoverableDrawerItemState extends State<HoverableDrawerItem> {
 // ------------------- SIDEBAR (DESKTOP) -------------------
 class UserDashboardSidebar extends StatelessWidget {
   final int selectedIndex;
+  final DashboardSection currentSection; // ADDED
   final void Function(int)? onItemTap;
   final List<_SidebarItemData?> items;
   final VoidCallback? onSupport;
@@ -429,6 +439,7 @@ class UserDashboardSidebar extends StatelessWidget {
   const UserDashboardSidebar({
     super.key,
     required this.selectedIndex,
+    required this.currentSection, // UPDATED
     required this.onItemTap,
     required this.items,
     this.onSupport,
@@ -446,8 +457,10 @@ class UserDashboardSidebar extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16.24, top: 31, bottom: 44),
             child: GestureDetector(
               onTap: () {
-                // This navigates to the dashboard and clears history stack
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => HomepageDashboard(),),
+                    (route) => false,
+                  );
               },
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -756,23 +769,22 @@ class _UserDropdownMenu extends StatelessWidget {
         children: [
           ...menuItems.map(
             (item) {
-              if (item.label == "Support") {
                 return _HoverDropdownMenuTile(
                   icon: item.icon,
                   label: item.label,
                   color: item.color,
                   onTap: () {
-                    if (onSupport != null) onSupport!();
-                    onClose();
+
+                    onClose(); // Close the dropdown
+                    if (item.label == "Support" && onSupport != null) {
+                        onSupport!();
+                      } else if (item.label == "Account Settings") {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => AccountSettings()),
+                        );
+                      }
                   },
                 );
-              }
-              return _HoverDropdownMenuTile(
-                icon: item.icon,
-                label: item.label,
-                color: item.color,
-                onTap: onClose,
-              );
             }
           ),
         ],
@@ -855,10 +867,31 @@ class _DropdownMenuItem {
 // ------------------- DESKTOP MAIN DASHBOARD CONTENT -------------------
 
 
-class _DashboardContent extends StatelessWidget {
-  final String title; // <<< ADDED
-  const _DashboardContent({super.key, required this.title}); // <<< UPDATED
+class _DashboardContent extends StatefulWidget {
+  final String title;
+  const _DashboardContent({super.key, required this.title});
 
+  @override
+  State<_DashboardContent> createState() => _DashboardContentState();
+}
+
+class _DashboardContentState extends State<_DashboardContent> {
+  List<String> selectedFileNames = [];
+
+  void _onFilesSelected(List<dynamic> files) {
+    setState(() {
+      selectedFileNames = files.map((file) {
+        if (file is PlatformFile) {
+          return file.name;
+        } else if (file is Map && file['name'] != null) {
+          return file['name'].toString();
+        } else {
+          return 'Unknown';
+        }
+      }).toList();
+    });
+    // You can add your upload logic here!
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -866,8 +899,6 @@ class _DashboardContent extends StatelessWidget {
     final bool isMobile = screenWidth < 600;
     final bool isTablet = screenWidth >= 600 && screenWidth < 1024;
     final double headerFontSize = isMobile ? 22.0 : isTablet ? 26.0 : 32.0;
-
-    // Dropzone card width: fill 94% on mobile, up to max 707px on desktop
     double cardWidth = (screenWidth * (isMobile ? 0.94 : isTablet ? 0.7 : 0.55)).clamp(280, 707);
 
     return Container(
@@ -881,7 +912,7 @@ class _DashboardContent extends StatelessWidget {
             left: isMobile ? 16 : 63,
             top: isMobile ? 16 : 37,
             child: Text(
-              title,
+              widget.title,
               style: TextStyle(
                 color: const Color(0xFF30285C),
                 fontSize: headerFontSize,
@@ -891,74 +922,31 @@ class _DashboardContent extends StatelessWidget {
               ),
             ),
           ),
-          // Centered Drop Zone Card
           Center(
-            child: DottedBorder(
-              dashPattern: [5, 6],
-              color: const Color(0xFFB3B3B3),
-              strokeWidth: 1.3,
-              borderType: BorderType.RRect,
-              radius: const Radius.circular(10),
-              child: Container(
-                width: cardWidth,
-                constraints: const BoxConstraints(
-                  minHeight: 120,
-                  maxHeight: 200,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: cardWidth,
+                  child: CenteredDropZoneCard(
+                    onFilesSelected: _onFilesSelected,
+                  ),
                 ),
-                color: const Color(0xFFF0EFFA),
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 14 : 32, vertical: isMobile ? 14 : 32),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                if (selectedFileNames.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Column(
                       children: [
-                        // Icon circle
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF251F48),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.upload_rounded, color: Colors.white, size: 28),
+                        const Text(
+                          "Selected files:",
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(width: 20),
-                        // Text
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Drop or select up to 10 files here',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: isMobile ? 15 : 20,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.48,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Supported: MP3, WAV, FLAC, M4A, MP4, MOV, WMA',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: isMobile ? 11 : 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w400,
-                                  letterSpacing: 0.32,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        for (final file in selectedFileNames)
+                          Text(file, style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   ),
-                ),
-              ),
+              ],
             ),
           ),
         ],
@@ -969,136 +957,33 @@ class _DashboardContent extends StatelessWidget {
 
 
 
-// ------------------- REUSABLE UPLOAD BUTTON -------------------
-class UploadButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final Color borderColor;
-  final Color iconColor;
-  final Color textColor;
-  final double iconSize;
-  final double circleSize;
-  final double fontSize;
-  final bool filledBackground;
 
-  const UploadButton({
-    super.key,
-    this.onPressed,
-    this.borderColor = const Color(0xFF656B8D),
-    this.iconColor = const Color(0xFF656B8D),
-    this.textColor = const Color(0xFF2A2E44),
-    this.iconSize = 20,
-    this.circleSize = 28,
-    this.fontSize = 20,
-    this.filledBackground = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: borderColor),
-        backgroundColor: filledBackground ? borderColor : Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: circleSize,
-            height: circleSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              color: const Color.fromARGB(0, 0, 0, 0),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.arrow_upward_rounded,
-                color: iconColor,
-                size: iconSize,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Upload',
-            style: TextStyle(
-              color: textColor,
-              fontSize: fontSize,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ------------------- REUSABLE SEARCH BAR -------------------
-class DashboardSearchBar extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged<String>? onChanged;
-
-  const DashboardSearchBar({
-    super.key,
-    this.controller,
-    this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 219,
-      height: 46,
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        style: const TextStyle(
-          color: Color(0xFF6A6A6A),
-          fontSize: 15,
-          fontFamily: 'Inter',
-          fontWeight: FontWeight.w400,
-        ),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-          filled: true,
-          fillColor: Color(0xFFE9E6F8), // matches your bg
-          hintText: "Search",
-          hintStyle: const TextStyle(
-            color: Color(0xFF6A6A6A),
-            fontSize: 15,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w400,
-          ),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF656B8D), size: 22),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(2),
-            borderSide: const BorderSide(color: Color(0xFF656B8D), width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(2),
-            borderSide: const BorderSide(color: Color(0xFF656B8D), width: 1.4),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(2),
-            borderSide: const BorderSide(color: Color(0xFF656B8D), width: 1),
-          ),
-        ),
-      ),
-    );
-  }
-}
 // ------------------- MOBILE DASHBOARD CONTENT -------------------
 
-class DashboardContentMobile extends StatelessWidget {
+class DashboardContentMobile extends StatefulWidget {
   final String title;
   const DashboardContentMobile({super.key, required this.title});
+
+  @override
+  State<DashboardContentMobile> createState() => _DashboardContentMobileState();
+}
+
+class _DashboardContentMobileState extends State<DashboardContentMobile> {
+  List<String> selectedFileNames = [];
+
+  Future<void> _pickFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav', 'flac', 'm4a', 'mp4', 'mov', 'wma'],
+    );
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        selectedFileNames = result.files.map((f) => f.name).toList();
+      });
+      // You can trigger your upload here as well.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1120,7 +1005,7 @@ class DashboardContentMobile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                title,
+                widget.title,
                 style: TextStyle(
                   color: const Color(0xFF30285C),
                   fontSize: scale(14),
@@ -1132,65 +1017,209 @@ class DashboardContentMobile extends StatelessWidget {
             ],
           ),
           SizedBox(height: scale(6)),
-          // Drop Zone Card (Responsive + Dashed Border)
+          // Tap-to-select upload card
           Expanded(
             child: Center(
-              child: DottedBorder(
-                dashPattern: [5, 5],
-                color: const Color(0xFFB3B3B3),
-                strokeWidth: 1.3,
-                borderType: BorderType.RRect,
-                radius: Radius.circular(scale(10)),
-                child: Container(
-                  width: double.infinity,
-                  constraints: BoxConstraints(
-                    maxWidth: scale(360),
-                    minHeight: scale(120),
-                    maxHeight: scale(170),
+              child: GestureDetector(
+                onTap: _pickFiles,
+                child: DottedBorder(
+                  dashPattern: [5, 5],
+                  color: const Color(0xFFB3B3B3),
+                  strokeWidth: 1.3,
+                  borderType: BorderType.RRect,
+                  radius: Radius.circular(scale(10)),
+                  child: Container(
+                    width: double.infinity,
+                    constraints: BoxConstraints(
+                      maxWidth: scale(360),
+                      minHeight: scale(120),
+                      maxHeight: scale(170),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      vertical: scale(24),
+                      horizontal: scale(16),
+                    ),
+                    color: Colors.white,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: scale(40),
+                          height: scale(40),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF251F48),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.upload_rounded, color: Colors.white, size: 28),
+                          ),
+                        ),
+                        SizedBox(width: scale(16)),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tap to select up to 10 files',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: scale(14),
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.5,
+                                ),
+                              ),
+                              SizedBox(height: scale(4)),
+                              Text(
+                                'Supported: MP3, WAV, FLAC, M4A, MP4, MOV, WMA',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: scale(11),
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  padding: EdgeInsets.symmetric(
-                    vertical: scale(24),
-                    horizontal: scale(16),
+                ),
+              ),
+            ),
+          ),
+          if (selectedFileNames.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: scale(8)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Selected files:",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: scale(13)),
                   ),
-                  color: Colors.white,
+                  ...selectedFileNames.map((file) => Text(
+                        file,
+                        style: TextStyle(fontSize: scale(12)),
+                      )),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ------------------- Dropdown CONTENT -------------------
+class CenteredDropZoneCard extends StatefulWidget {
+  final Function(List<dynamic> files) onFilesSelected;
+
+  const CenteredDropZoneCard({Key? key, required this.onFilesSelected}) : super(key: key);
+
+  @override
+  State<CenteredDropZoneCard> createState() => _CenteredDropZoneCardState();
+}
+
+class _CenteredDropZoneCardState extends State<CenteredDropZoneCard> {
+  DropzoneViewController? dropzoneController;
+  bool isHighlighted = false;
+
+  Future<void> _pickFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav', 'flac', 'm4a', 'mp4', 'mov', 'wma'],
+    );
+    if (result != null && result.files.isNotEmpty) {
+      widget.onFilesSelected(result.files); // List<PlatformFile>
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final TargetPlatform platform = Theme.of(context).platform;
+    final bool isDesktop = platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.windows ||
+        platform == TargetPlatform.linux;
+
+    return Stack(
+      children: [
+        if (isDesktop)
+          DropzoneView(
+            onCreated: (controller) => dropzoneController = controller,
+            onDrop: (ev) async {
+              final name = await dropzoneController!.getFilename(ev);
+              final bytes = await dropzoneController!.getFileData(ev);
+              widget.onFilesSelected([
+                {
+                  'name': name,
+                  'bytes': bytes,
+                }
+              ]);
+              setState(() => isHighlighted = false);
+            },
+            onHover: () => setState(() => isHighlighted = true),
+            onLeave: () => setState(() => isHighlighted = false),
+          ),
+        GestureDetector(
+          onTap: _pickFiles,
+          child: DottedBorder(
+            dashPattern: [5, 6],
+            color: isHighlighted ? Colors.blue : const Color(0xFFB3B3B3),
+            strokeWidth: 1.3,
+            borderType: BorderType.RRect,
+            radius: const Radius.circular(10),
+            child: Container(
+              width: 500,
+              constraints: const BoxConstraints(
+                minHeight: 120,
+                maxHeight: 200,
+              ),
+              color: const Color(0xFFF0EFFA),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        width: scale(40),
-                        height: scale(40),
+                        width: 48,
+                        height: 48,
                         decoration: const BoxDecoration(
                           color: Color(0xFF251F48),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(
-                          child: Icon(Icons.upload_rounded, color: Colors.white, size: 28),
-                        ),
+                        child: const Icon(Icons.upload_rounded, color: Colors.white, size: 28),
                       ),
-                      SizedBox(width: scale(16)),
-                      Flexible(
+                      const SizedBox(width: 20),
+                      Expanded(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Drop or select up to 10 files here',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: scale(14),
+                                fontSize: 20,
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
-                                height: 1.5,
+                                letterSpacing: 0.48,
                               ),
                             ),
-                            SizedBox(height: scale(4)),
-                            Text(
+                            const SizedBox(height: 4),
+                            const Text(
                               'Supported: MP3, WAV, FLAC, M4A, MP4, MOV, WMA',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: scale(11),
+                                fontSize: 14,
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w400,
+                                letterSpacing: 0.32,
                               ),
                             ),
                           ],
@@ -1202,11 +1231,16 @@ class DashboardContentMobile extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
+
+
+
+
+
 
 
 class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
@@ -1227,3 +1261,5 @@ class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
           },
         );
 }
+
+
