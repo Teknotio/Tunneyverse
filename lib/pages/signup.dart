@@ -294,7 +294,7 @@ class _SignUpFormState extends State<_SignUpForm> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://api.tuneyverse.com/users/signup'),
+        Uri.parse('https://api.tuneyverse.com/auth/signup'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           "email": email,
@@ -310,7 +310,7 @@ class _SignUpFormState extends State<_SignUpForm> {
         // Success! Move to OTP
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const OtpVerifyPage()),
+          MaterialPageRoute(builder: (_) => OtpVerifyPage(email: email)),
         );
       } else {
         setState(() {

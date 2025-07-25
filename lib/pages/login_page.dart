@@ -286,7 +286,7 @@ class _SignInFormState extends State<_SignInForm> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://api.tuneyverse.com/login'),
+        Uri.parse('https://api.tuneyverse.com/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           "email": email,

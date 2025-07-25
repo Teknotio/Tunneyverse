@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tuneyverse/pages/new_password.dart';
 
 class OtpVerificationPage extends StatelessWidget {
-  const OtpVerificationPage({super.key});
+  final String email;
+  const OtpVerificationPage({required this.email, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +40,15 @@ class OtpVerificationPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _OtpForm(isDesktop: isDesktop),
+                              _OtpForm(isDesktop: isDesktop, email: email), // <-- Updated here
                               SizedBox(height: 20),
                               _ResendRow(isDesktop: isDesktop), // <-- updated!
                               SizedBox(height: isDesktop ? 32 : 18),
-                              _VerifyButton(isDesktop: isDesktop),
+                              _VerifyButton(
+                                isDesktop: isDesktop,
+                                email: email,
+                                otpController: TextEditingController(),
+                              ), // <-- Updated here
                             ],
                           ),
                         ),
@@ -151,13 +156,14 @@ class _OtpHeader extends StatelessWidget {
 
 class _OtpForm extends StatefulWidget {
   final bool isDesktop;
-  const _OtpForm({required this.isDesktop});
+  final String email;
+  const _OtpForm({required this.isDesktop, required this.email});
   @override
   State<_OtpForm> createState() => _OtpFormState();
 }
 
 class _OtpFormState extends State<_OtpForm> {
-  final _otpController = TextEditingController();
+  final TextEditingController otpController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +182,7 @@ class _OtpFormState extends State<_OtpForm> {
         ),
         SizedBox(height: 8),
         TextField(
-          controller: _otpController,
+          controller: otpController,
           keyboardType: TextInputType.number,
           maxLength: 6,
           decoration: InputDecoration(
@@ -264,7 +270,9 @@ class _ResendRow extends StatelessWidget {
 
 class _VerifyButton extends StatelessWidget {
   final bool isDesktop;
-  const _VerifyButton({required this.isDesktop});
+  final String email;
+  final TextEditingController otpController;
+  const _VerifyButton({required this.isDesktop, required this.email, required this.otpController});
 
   @override
   Widget build(BuildContext context) {
@@ -274,9 +282,14 @@ class _VerifyButton extends StatelessWidget {
         onPressed: () {
           // Navigate to NewPasswordPage
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const NewPasswordPage()),
-          );
+  context,
+  MaterialPageRoute(
+    builder: (_) => NewPasswordPage(
+      email: email,                   // Use your existing email
+      code: otpController.text,      // The entered OTP code
+    ),
+  ),
+);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF40367B),
@@ -305,19 +318,4 @@ class _VerifyButton extends StatelessWidget {
   }
 }
 
-// For demo/testing
-void main() {
-  runApp(const MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'OTP Demo',
-      debugShowCheckedModeBanner: false,
-      home: OtpVerificationPage(),
-    );
-  }
-}
