@@ -169,7 +169,7 @@ class _ForgotFormState extends State<ForgotForm> {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email}),
+        body: json.encode({'email': email, 'otp_type': 'password_reset'}),
       );
 
       if (response.statusCode == 200) {

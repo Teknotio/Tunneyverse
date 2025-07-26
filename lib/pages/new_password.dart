@@ -6,6 +6,7 @@ import 'package:tuneyverse/pages/login_page.dart'; // <-- Replace with your path
 class NewPasswordPage extends StatelessWidget {
   final String email;
   final String code;
+  
   const NewPasswordPage({super.key, required this.email, required this.code});
 
   @override
@@ -256,16 +257,20 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
                 ? null
                 : () async {
                     setState(() => loading = true);
+                    final payload = {
+                        "code": widget.code,
+                        "email": widget.email,
+                        "new_password": passwordController.text,
+                      };
+                    print('Sending payload: $payload'); // ✅ Debug print
                     final response = await http.post(
                       Uri.parse('https://api.tuneyverse.com/auth/reset-password'),
                       headers: {'Content-Type': 'application/json'},
-                      body: jsonEncode({
-                        "code": widget.code,
-                        "email": widget.email,
-                        "password": passwordController.text,
-                      }),
+                      body: jsonEncode(payload),
                     );
-                    setState(() => loading = false);
+                    print('Status code: ${response.statusCode}'); // ✅ Debug print
+                    print('Response body: ${response.body}');     // ✅ Debug print
+                                setState(() => loading = false);
                     if (response.statusCode == 200) {
                       if (!mounted) return;
                       Navigator.of(context).pushAndRemoveUntil(
@@ -274,8 +279,8 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
                       );
                     } else {
                       final Map<String, dynamic>? body = response.body.isNotEmpty
-                          ? jsonDecode(response.body)
-                          : null;
+                        ? jsonDecode(response.body)
+                        : null;
                       final message = body?['message'] ??
                           'Failed to set password. Please try again.';
                       if (!mounted) return;

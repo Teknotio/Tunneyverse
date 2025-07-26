@@ -219,9 +219,10 @@ class _ResendRowState extends State<_ResendRow> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://api.tuneyverse.com/auth/resend-verification'),
+        Uri.parse('https://api.tuneyverse.com/auth/resend-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': widget.email}),
+        body: jsonEncode({'email': widget.email, 'otp_type': 'signup',
+        }),
       );
 
       if (response.statusCode == 200) {
