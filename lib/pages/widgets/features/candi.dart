@@ -298,184 +298,170 @@ class _MobileChorusAndInstrumental extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isWeb = kIsWeb;
-    return Container(
-      width: 375,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 64),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Column(
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Chorus and Instrumental',
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
+    return Center(
+      child: Container(
+        // Main container styling
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+        decoration: ShapeDecoration(
+          color: const Color(0xFFEDEDED),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Title
+            SizedBox(
+              width: 314,
+              child: Text(
+                'Select package  & choose files',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF1B191C),
+                  fontSize: 32,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  height: 1.38,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: 335,
-            child: Text(
-              'AI vocal remover that keeps instrumentals and chorus, perfect for karaoke, remixes, and videos.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF251F48),
-                fontSize: 40,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w700,
-                height: 1.2,
+            const SizedBox(height: 24),
+            // Subheading (shows picked file or default text)
+            SizedBox(
+              width: 219,
+              child: Text(
+                pickedFileName ?? 'Paste File Here',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0x191B191C),
+                  fontSize: 32,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  height: 0.50,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: 335,
-            height: 669,
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: onPickFile,
-                  child: Container(
+            const SizedBox(height: 36),
+            // File package box & Select Files button
+            SizedBox(
+              width: 295,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dropdown full width, styled box
+                  Container(
                     width: double.infinity,
-                    height: 635,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEDEDED),
-                      borderRadius: BorderRadius.circular(8),
+                    // Remove horizontal padding for full width dropdown
+                    padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFDCDCDC),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
-                    child: Stack(
-                      children: [
-                        if (isWeb)
-                          DropzoneView(
-                            onCreated: onDropzoneCreated,
-                            onDrop: (ev) async {
-                              final name = await dropzoneController?.getFilename(ev) ?? 'Unknown';
-                              onPickFile(); // Or call file dropped handler if you want
-                            },
-                            operation: DragOperation.copy,
-                            cursor: CursorType.grab,
-                          ),
-                        Positioned(
-                          left: 60,
-                          top: 294,
-                          child: Column(
-                            children: [
-                              Text(
-                                pickedFileName ?? (isWeb ? 'Drag & drop or tap to select file' : 'Paste File Here'),
-                                style: const TextStyle(
-                                  color: Color(0x191B191C),
-                                  fontSize: 32,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  height: 0.5,
-                                ),
-                              ),
-                              if (pickedFileName != null)
-                                Text(
-                                  'File ready: $pickedFileName',
-                                  style: const TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        // Dropdown
-                        Positioned(
-                          left: 24,
-                          top: 403,
-                          child: Container(
-                            width: 287,
-                            height: 96,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: const Color(0x141B191C),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Center(
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value: selectedOption,
-                                  onChanged: onChanged,
-                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
-                                  dropdownColor: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  items: options.map((String option) {
-                                    return DropdownMenuItem<String>(
-                                      value: option,
-                                      child: Text(
-                                        option,
-                                        style: const TextStyle(
-                                          color: Color(0xFF1B191C),
-                                          fontSize: 14,
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedOption,
+                        items: options.map((option) {
+                          return DropdownMenuItem<String>(
+                            value: option,
+                            child: Text(
+                              option,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1B191C),
                               ),
                             ),
-                          ),
-                        ),
-                        // Select Files Button
-                        Positioned(
-                          left: 24,
-                          top: 519,
-                          child: GestureDetector(
-                            onTap: onPickFile,
-                            child: Container(
-                              width: 287,
-                              height: 98,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6A5ACD),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'Select Files',
-                                  style: TextStyle(
-                                    color: Color(0xFFF0EFFA),
-                                    fontSize: 16,
-                                    fontFamily: 'Roboto',
-                                    fontWeight: FontWeight.w400,
-                                    height: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                          );
+                        }).toList(),
+                        onChanged: onChanged,
+                        icon: const Icon(Icons.arrow_drop_down),
+                        dropdownColor: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: 335,
-                  child: Text(
-                    '* By uploading a file, you agree to our Terms of Service.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF251F48),
-                      fontSize: 10,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400,
-                      height: 1.6,
+                  const SizedBox(height: 16),
+                  // Select Files button, also full width
+                  SizedBox(
+                    width: double.infinity,
+                    child: GestureDetector(
+                      onTap: onPickFile,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFF6A5ACD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Select Files',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              height: 2.29,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  if (pickedFileName != null) ...[
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Text(
+                        'File ready: $pickedFileName',
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (isWeb)
+                    Container(
+                      width: double.infinity,
+                      height: 80,
+                      margin: const EdgeInsets.only(top: 10),
+                      child: DropzoneView(
+                        onCreated: onDropzoneCreated,
+                        onDrop: (ev) async {
+                          final name = await dropzoneController?.getFilename(ev) ?? 'Unknown';
+                          // Handle file drop as needed, e.g., call onChanged or a handler
+                        },
+                        operation: DragOperation.copy,
+                        cursor: CursorType.grab,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 295,
+              child: Text(
+                '* By uploading a file, you agree to our Terms of Service.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF251F48),
+                  fontSize: 10,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

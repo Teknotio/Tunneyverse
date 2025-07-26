@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:tuneyverse/pages/new_password.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+
+
+
 
 class OtpVerificationPage extends StatelessWidget {
-  const OtpVerificationPage({super.key});
+  final String email;
+  final otpController = TextEditingController(); // Create here
+  OtpVerificationPage({required this.email, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +47,15 @@ class OtpVerificationPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _OtpForm(isDesktop: isDesktop),
+                              _OtpForm(isDesktop: isDesktop, email: email, otpController: otpController), // <-- Updated here
                               SizedBox(height: 20),
-                              _ResendRow(isDesktop: isDesktop), // <-- updated!
+                              _ResendRow(isDesktop: isDesktop, email: email), // <-- updated!
                               SizedBox(height: isDesktop ? 32 : 18),
-                              _VerifyButton(isDesktop: isDesktop),
+                              _VerifyButton(
+                                isDesktop: isDesktop,
+                                email: email,
+                                otpController: otpController,
+                              ), // <-- Updated here
                             ],
                           ),
                         ),
@@ -151,13 +163,14 @@ class _OtpHeader extends StatelessWidget {
 
 class _OtpForm extends StatefulWidget {
   final bool isDesktop;
-  const _OtpForm({required this.isDesktop});
+  final String email;
+  final TextEditingController otpController;
+  const _OtpForm({required this.isDesktop, required this.email, required this.otpController});
   @override
   State<_OtpForm> createState() => _OtpFormState();
 }
 
 class _OtpFormState extends State<_OtpForm> {
-  final _otpController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +189,8 @@ class _OtpFormState extends State<_OtpForm> {
         ),
         SizedBox(height: 8),
         TextField(
-          controller: _otpController,
-          keyboardType: TextInputType.number,
+          controller: widget.otpController, // ✅ correct controller
+          keyboardType: TextInputType.text,
           maxLength: 6,
           decoration: InputDecoration(
             hintText: 'Enter Code',
@@ -212,7 +225,10 @@ class _OtpFormState extends State<_OtpForm> {
 
 class _ResendRow extends StatelessWidget {
   final bool isDesktop;
-  const _ResendRow({required this.isDesktop});
+  final String email;
+
+  const _ResendRow({required this.isDesktop, required this.email});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -233,16 +249,31 @@ class _ResendRow extends StatelessWidget {
               ),
               WidgetSpan(
                 child: GestureDetector(
-                  onTap: () {
-                    // Feedback for the user
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("A new code has been sent to your email."),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                    // Insert your resend logic here!
-                  },
+                  onTap: () async {
+                    try {
+                      final response = await http.post(
+                        Uri.parse('https://api.tuneyverse.com/auth/resend-otp'),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({
+                          'email': email,
+                          'otp_type': 'password_reset', // or 'signup'
+                        }),
+                      );
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("A new code has been sent to your email.")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to resend code. Please try again.")),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("An error occurred. Please try again.")),
+    );
+  }
+},
                   child: Text(
                     ' Resend',
                     style: TextStyle(
@@ -262,22 +293,53 @@ class _ResendRow extends StatelessWidget {
   }
 }
 
+
 class _VerifyButton extends StatelessWidget {
   final bool isDesktop;
-  const _VerifyButton({required this.isDesktop});
+  final String email;
+  final TextEditingController otpController;
+  const _VerifyButton({required this.isDesktop, required this.email, required this.otpController});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          // Navigate to NewPasswordPage
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const NewPasswordPage()),
-          );
-        },
+        onPressed: () async {
+  final code = otpController.text.trim();
+
+  if (code.length != 6) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Please enter a valid 6-digit code.")),
+    );
+    return;
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('https://api.tuneyverse.com/auth/verify-reset-code'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'code': code, 'email': email}),
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NewPasswordPage(email: email, code: code),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Invalid code. Please try again.")),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Something went wrong. Please try again.")),
+    );
+  }
+},
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF40367B),
           foregroundColor: Colors.white,
@@ -305,19 +367,4 @@ class _VerifyButton extends StatelessWidget {
   }
 }
 
-// For demo/testing
-void main() {
-  runApp(const MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'OTP Demo',
-      debugShowCheckedModeBanner: false,
-      home: OtpVerificationPage(),
-    );
-  }
-}

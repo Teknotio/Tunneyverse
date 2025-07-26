@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tuneyverse/pages/forget_password_otp.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ForgotPasswordPage extends StatelessWidget {
   const ForgotPasswordPage({super.key});
@@ -36,9 +37,7 @@ class ForgotPasswordPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _ForgotForm(isDesktop: isDesktop),
-                              SizedBox(height: isDesktop ? 32 : 20),
-                              _SubmitButton(isDesktop: isDesktop),
+                              ForgotForm(isDesktop: isDesktop), // <-- Updated here
                             ],
                           ),
                         ),
@@ -144,15 +143,59 @@ class _ForgotHeader extends StatelessWidget {
   }
 }
 
-class _ForgotForm extends StatefulWidget {
+// ---------- UPDATED FORM -----------
+class ForgotForm extends StatefulWidget {
   final bool isDesktop;
-  const _ForgotForm({required this.isDesktop});
+  const ForgotForm({required this.isDesktop});
   @override
-  State<_ForgotForm> createState() => _ForgotFormState();
+  State<ForgotForm> createState() => _ForgotFormState();
 }
 
-class _ForgotFormState extends State<_ForgotForm> {
+class _ForgotFormState extends State<ForgotForm> {
   final _emailController = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _submit(BuildContext context) async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final email = _emailController.text.trim();
+
+    // Replace with your API endpoint for sending OTP
+    final url = Uri.parse('https://api.tuneyverse.com/auth/forgot-password');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email, 'otp_type': 'password_reset'}),
+      );
+
+      if (response.statusCode == 200) {
+        // Go to OTP page, pass the email along
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OtpVerificationPage(email: email),
+          ),
+        );
+      } else {
+        final msg = json.decode(response.body)['message'] ?? 'Error sending OTP. Please try again.';
+        setState(() {
+          _error = msg;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = "Network error. Please check your connection.";
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -198,67 +241,53 @@ class _ForgotFormState extends State<_ForgotForm> {
             fontWeight: FontWeight.w400,
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _SubmitButton extends StatelessWidget {
-  final bool isDesktop;
-  const _SubmitButton({required this.isDesktop});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => const OtpVerificationPage()),
-  );
-},
-
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF40367B),
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(2),
-            side: const BorderSide(
-              width: 1,
-              color: Color(0xFF251F48),
+        SizedBox(height: 20),
+        if (_error != null)
+          Text(_error!, style: TextStyle(color: Colors.red, fontSize: 14)),
+        SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _loading
+                ? null
+                : () {
+                    if (_emailController.text.trim().isEmpty) {
+                      setState(() {
+                        _error = 'Please enter your email address.';
+                      });
+                      return;
+                    }
+                    _submit(context);
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF40367B),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(2),
+                side: const BorderSide(
+                  width: 1,
+                  color: Color(0xFF251F48),
+                ),
+              ),
+              elevation: 0,
             ),
+            child: _loading
+                ? const SizedBox(
+                    width: 24, height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(
+                    'SUBMIT',
+                    style: TextStyle(
+                      letterSpacing: 1.5,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
           ),
-          elevation: 0,
         ),
-        child: Text(
-          'SUBMIT',
-          style: TextStyle(
-            letterSpacing: 1.5,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// For demo/testing
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Forgot Password Demo',
-      debugShowCheckedModeBanner: false,
-      home: ForgotPasswordPage(),
+      ],
     );
   }
 }

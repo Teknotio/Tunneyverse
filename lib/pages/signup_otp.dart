@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:tuneyverse/pages/chorus_and_instrumental/user_dashboard.dart';
 
 class OtpVerifyPage extends StatelessWidget {
-  const OtpVerifyPage({super.key});
+  final String email;
+  const OtpVerifyPage({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
+    final _otpController = TextEditingController();
+    final Email = email; // Use the email passed to the constructor
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: LayoutBuilder(
@@ -14,13 +22,8 @@ class OtpVerifyPage extends StatelessWidget {
 
           return Column(
             children: [
-              // HEADER at the top, fixed
               SignUpHeader(isDesktop: isDesktop),
-
-              // Spacer if you want space after header
               SizedBox(height: isDesktop ? 48 : 24),
-
-              // Scrollable content
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(
@@ -34,15 +37,21 @@ class OtpVerifyPage extends StatelessWidget {
                             horizontal: isDesktop ? 0 : 20,
                             vertical: isDesktop ? 0 : 40,
                           ),
-                          decoration: BoxDecoration(color: Colors.white),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _OtpForm(isDesktop: isDesktop),
+                              _OtpForm(
+                                isDesktop: isDesktop,
+                                controller: _otpController,
+                              ),
                               SizedBox(height: 20),
-                              _ResendRow(isDesktop: isDesktop),
+                              _ResendRow(isDesktop: isDesktop, email: Email),
                               SizedBox(height: isDesktop ? 32 : 18),
-                              _VerifyButton(isDesktop: isDesktop),
+                              _VerifyButton(
+                                isDesktop: isDesktop,
+                                otpController: _otpController,
+                                email: Email,
+                              ),
                             ],
                           ),
                         ),
@@ -60,7 +69,6 @@ class OtpVerifyPage extends StatelessWidget {
   }
 }
 
-// --- Reuse your header component ---
 class SignUpHeader extends StatelessWidget {
   final bool isDesktop;
   const SignUpHeader({super.key, required this.isDesktop});
@@ -72,10 +80,7 @@ class SignUpHeader extends StatelessWidget {
       height: isDesktop ? 92 : 64,
       decoration: ShapeDecoration(
         shape: RoundedRectangleBorder(
-          side: const BorderSide(
-            width: 1,
-            color: Color(0xFFD9DADC),
-          ),
+          side: const BorderSide(width: 1, color: Color(0xFFD9DADC)),
         ),
       ),
       alignment: Alignment.center,
@@ -93,13 +98,11 @@ class SignUpHeader extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               'Tuneyverse',
-              textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFF170F49),
                 fontSize: 28.15,
                 fontFamily: 'DM Sans',
                 fontWeight: FontWeight.w700,
-                height: 1.06,
               ),
             ),
           ],
@@ -112,6 +115,7 @@ class SignUpHeader extends StatelessWidget {
 class _OtpHeader extends StatelessWidget {
   final bool isDesktop;
   const _OtpHeader({required this.isDesktop});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -148,19 +152,13 @@ class _OtpHeader extends StatelessWidget {
   }
 }
 
-class _OtpForm extends StatefulWidget {
+class _OtpForm extends StatelessWidget {
   final bool isDesktop;
-  const _OtpForm({required this.isDesktop});
-  @override
-  State<_OtpForm> createState() => _OtpFormState();
-}
-
-class _OtpFormState extends State<_OtpForm> {
-  final _otpController = TextEditingController();
+  final TextEditingController controller;
+  const _OtpForm({required this.isDesktop, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = widget.isDesktop;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,25 +173,18 @@ class _OtpFormState extends State<_OtpForm> {
         ),
         SizedBox(height: 8),
         TextField(
-          controller: _otpController,
+          controller: controller,
           keyboardType: TextInputType.number,
           maxLength: 6,
           decoration: InputDecoration(
             hintText: 'Enter Code',
-            hintStyle: TextStyle(
-              color: const Color(0xFF303030).withOpacity(0.4),
-              fontSize: isDesktop ? 16 : 14,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w400,
-            ),
             counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(
-                color: Color(0xFF79747E),
-              ),
+              borderSide: const BorderSide(color: Color(0xFF79747E)),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             filled: true,
             fillColor: Colors.white,
           ),
@@ -209,9 +200,59 @@ class _OtpFormState extends State<_OtpForm> {
   }
 }
 
-class _ResendRow extends StatelessWidget {
+class _ResendRow extends StatefulWidget {
   final bool isDesktop;
-  const _ResendRow({required this.isDesktop});
+  final String email;
+  const _ResendRow({required this.isDesktop, required this.email});
+
+  @override
+  State<_ResendRow> createState() => _ResendRowState();
+}
+
+class _ResendRowState extends State<_ResendRow> {
+  bool _isLoading = false;
+
+  Future<void> _resendCode(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.tuneyverse.com/auth/resend-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': widget.email, 'otp_type': 'signup',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('A new code has been sent to your email.')),
+        );
+      } else {
+        String errorMsg = 'Failed to resend code. Please try again.';
+        try {
+          final resp = jsonDecode(response.body);
+          if (resp is Map && resp['message'] != null) {
+            errorMsg = resp['message'].toString();
+          }
+        } catch (_) {}
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg)),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -231,18 +272,26 @@ class _ResendRow extends StatelessWidget {
                 ),
               ),
               WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
                 child: GestureDetector(
-                  onTap: () {
-                    // TODO: Add resend logic here
-                  },
-                  child: Text(
-                    ' Resend',
-                    style: TextStyle(
-                      color: const Color(0xFFFF8682),
-                      fontSize: 14,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w600,
-                    ),
+                  onTap: _isLoading ? null : () => _resendCode(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: _isLoading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            ' Resend',
+                            style: TextStyle(
+                              color: const Color(0xFFFF8682),
+                              fontSize: 14,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -254,58 +303,111 @@ class _ResendRow extends StatelessWidget {
   }
 }
 
-class _VerifyButton extends StatelessWidget {
+
+class _VerifyButton extends StatefulWidget {
   final bool isDesktop;
-  const _VerifyButton({required this.isDesktop});
+  final TextEditingController otpController;
+  final String email;
+
+  const _VerifyButton({
+    required this.isDesktop,
+    required this.otpController,
+    required this.email,
+  });
+
+  @override
+  State<_VerifyButton> createState() => _VerifyButtonState();
+}
+
+class _VerifyButtonState extends State<_VerifyButton> {
+  bool _isLoading = false;
+
+  Future<void> _verifyCode(BuildContext context) async {
+    final code = widget.otpController.text.trim();
+
+    if (code.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a 6-digit code')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.tuneyverse.com/auth/verify-email'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'code': code, 'email': widget.email}),
+      );
+
+      if (response.statusCode == 200) {
+  // Optional: Show a quick confirmation
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Email verified successfully!')),
+  );
+  // Wait a moment so user sees the message
+  await Future.delayed(const Duration(milliseconds: 800));
+  // Replace the stack so user can't go "back" to OTP
+  Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(builder: (_) => const HomepageDashboard()),
+    (route) => false,
+  );
+} else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Verification failed. Please try again.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          // TODO: Add verify logic here
-        },
+        onPressed: _isLoading ? null : () => _verifyCode(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF40367B),
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+          padding: EdgeInsets.symmetric(vertical: widget.isDesktop ? 16 : 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(2),
-            side: const BorderSide(
-              width: 1,
-              color: Color(0xFF251F48),
-            ),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          'VERIFY',
-          style: TextStyle(
-            letterSpacing: 1.5,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
+            side: const BorderSide(width: 1, color: Color(0xFF251F48)),
           ),
         ),
+        child: _isLoading
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                'VERIFY',
+                style: TextStyle(
+                  letterSpacing: 1.5,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
+                ),
+              ),
       ),
     );
   }
 }
 
-// For testing/demo:
-void main() {
-  runApp(const MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'OTP Demo',
-      debugShowCheckedModeBanner: false,
-      home: OtpVerifyPage(),
-    );
-  }
-}
+

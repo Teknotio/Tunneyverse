@@ -1,61 +1,84 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import 'dart:async';
+import 'package:just_audio/just_audio.dart' as ja;
+import 'package:audio_waveforms/audio_waveforms.dart' as aw;
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
 
-class OriginalRecordingWidget extends StatefulWidget {
-  const OriginalRecordingWidget({super.key});
+class NetworkAudioPlayer extends StatefulWidget {
+  final String audioUrl;
+  const NetworkAudioPlayer({super.key, required this.audioUrl});
 
   @override
-  State<OriginalRecordingWidget> createState() => _OriginalRecordingWidgetState();
+  State<NetworkAudioPlayer> createState() => _NetworkAudioPlayerState();
 }
 
-class _OriginalRecordingWidgetState extends State<OriginalRecordingWidget> {
-  late AudioPlayer _player;
+class _NetworkAudioPlayerState extends State<NetworkAudioPlayer> {
+  late ja.AudioPlayer _player;
+  late aw.PlayerController _waveformController;
+  bool _loading = true;
+  bool _isPlaying = false;
+  bool _waveformReady = false;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
-  bool _isPlaying = false;
-  StreamSubscription<Duration>? _positionSub;
-  StreamSubscription<PlayerState>? _playerStateSub;
-  StreamSubscription<Duration?>? _durationSub;
+  String? _localPath;
 
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
-    _init();
+    _player = ja.AudioPlayer();
+    _waveformController = aw.PlayerController();
+    _listenStreams();
+    _initAudio();
   }
 
-  Future<void> _init() async {
+  void _listenStreams() {
+    _player.durationStream.listen((d) {
+      if (d != null) setState(() => _duration = d);
+    });
+    _player.positionStream.listen((pos) {
+      setState(() => _position = pos);
+    });
+    _player.playerStateStream.listen((state) {
+      setState(() => _isPlaying = state.playing);
+    });
+  }
+
+  Future<void> _initAudio() async {
+    setState(() { _loading = true; });
+
     try {
-      print('🔊 Loading audio asset...');
-      await _player.setAsset('assets/audio/original.mp3');
-      print('✅ Audio loaded!');
+      // 1. Download file to local temp
+      final localPath = await _downloadFile(widget.audioUrl);
+      _localPath = localPath;
 
-      _durationSub = _player.durationStream.listen((d) {
-        if (d != null) {
-          setState(() => _duration = d);
-        }
-      });
+      // 2. Play from the network (streaming) for just_audio
+      await _player.setUrl(widget.audioUrl);
 
-      _positionSub = _player.positionStream.listen((pos) {
-        setState(() => _position = pos);
-      });
+      // 3. Prepare waveform from the local file
+      await _waveformController.preparePlayer(
+        path: localPath,
+        shouldExtractWaveform: true,
+        noOfSamples: 100,
+      );
 
-      _playerStateSub = _player.playerStateStream.listen((state) {
-        setState(() => _isPlaying = state.playing);
+      setState(() {
+        _loading = false;
+        _waveformReady = true;
       });
     } catch (e) {
-      print('❌ Error loading audio: $e');
+      setState(() { _loading = false; });
+      print("Error: $e");
     }
   }
 
-  @override
-  void dispose() {
-    _durationSub?.cancel();
-    _positionSub?.cancel();
-    _playerStateSub?.cancel();
-    _player.dispose();
-    super.dispose();
+  Future<String> _downloadFile(String url) async {
+    final response = await http.get(Uri.parse(url));
+    final tempDir = await getTemporaryDirectory();
+    final filename = 'audio_from_url_${DateTime.now().microsecondsSinceEpoch}.mp3';
+    final file = File('${tempDir.path}/$filename');
+    await file.writeAsBytes(response.bodyBytes);
+    return file.path;
   }
 
   String _formatTime(Duration d) {
@@ -64,128 +87,116 @@ class _OriginalRecordingWidgetState extends State<OriginalRecordingWidget> {
     return "$m:$s";
   }
 
+  Future<void> _togglePlayPause() async {
+    if (_isPlaying) {
+      await _player.pause();
+      await _waveformController.pausePlayer();
+    } else {
+      await _player.play();
+      await _waveformController.startPlayer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    _waveformController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 661,
-      height: 200,
-      decoration: ShapeDecoration(
-        color: const Color(0xFF323033),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final waveWidth = screenWidth > 700 ? 600.0 : screenWidth - 48.0;
+
+    return Center(
+      child: Container(
+        width: isMobile ? double.infinity : 661.0,
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 16.0 : 32.0,
+          vertical: isMobile ? 16.0 : 32.0,
         ),
-      ),
-      child: Stack(
-        children: [
-          // Header Row: Play/Pause + Title + Time
-          Positioned(
-            left: 20,
-            top: 20,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+        decoration: ShapeDecoration(
+          color: const Color(0xFF323033),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Play/Pause Button
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: IconButton(
-                    icon: Icon(
-                      _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                      color: Colors.white,
-                      size: 40,
-                    ),
-                    onPressed: () {
-                      if (_isPlaying) {
-                        _player.pause();
-                      } else {
-                        _player.play();
-                      }
-                    },
+                IconButton(
+                  icon: Icon(
+                    _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                    color: Colors.white,
+                    size: isMobile ? 40.0 : 48.0,
                   ),
+                  onPressed: _loading ? null : _togglePlayPause,
                 ),
-                const SizedBox(width: 16),
-                const SizedBox(
-                  width: 231.58,
-                  height: 32,
+                const SizedBox(width: 8.0),
+                Expanded(
                   child: Text(
-                    'Original recording',
+                    widget.audioUrl,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400,
-                      height: 1.14,
+                      fontSize: isMobile ? 14.0 : 20.0,
+                      fontWeight: FontWeight.w500,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12.0),
                 Text(
                   '${_formatTime(_position)} / ${_formatTime(_duration)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    height: 1.42,
-                    letterSpacing: -0.30,
+                    fontSize: isMobile ? 12.0 : 14.0,
                   ),
                 ),
               ],
             ),
-          ),
-
-          // Waveform Bars (static visuals)
-          Positioned(
-            left: 20,
-            top: 59,
-            child: Container(
-              width: 625,
-              height: 102,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(),
-              child: Stack(
-                children: [
-                  _buildBar(left: 5, top: 65, width: 24),
-                  _buildBar(left: 10, top: 76.07, width: 50.14),
-                  _buildBar(left: 15, top: 69.56, width: 37.12),
-                  _buildBar(left: 20, top: 66.15, width: 30.30),
-                  _buildBar(left: 25, top: 75.71, width: 49.42),
-                  _buildBar(left: 30, top: 72.97, width: 43.95),
-                  _buildBar(left: 35, top: 75.36, width: 48.71),
-                  _buildBar(left: 40, top: 76.41, width: 50.81),
-                  _buildBar(left: 45, top: 63.88, width: 25.76),
-                  _buildBar(left: 50, top: 69.20, width: 36.39),
-                  _buildBar(left: 55, top: 64.11, width: 26.22),
-                ],
+            const SizedBox(height: 24.0),
+            if (_loading)
+              Container(
+                alignment: Alignment.center,
+                height: 80.0,
+                child: const CircularProgressIndicator(color: Colors.white),
+              )
+            else if (_waveformReady)
+              aw.AudioFileWaveforms(
+                size: Size(waveWidth, 64.0),
+                playerController: _waveformController,
+                waveformType: aw.WaveformType.long,
+                continuousWaveform: true,
+                enableSeekGesture: true,
+                playerWaveStyle: aw.PlayerWaveStyle(
+                  fixedWaveColor: const Color(0xFFF0EFFA),
+                  liveWaveColor: Colors.blueAccent,
+                  spacing: 6.0,
+                  waveThickness: 3.5,
+                  showSeekLine: true,
+                  seekLineThickness: 3.0,
+                  showTop: true,
+                ),
+              )
+            else
+              Container(
+                alignment: Alignment.center,
+                height: 80.0,
+                child: Text(
+                  'Loading audio...',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: isMobile ? 14.0 : 16.0,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildBar({
-    required double left,
-    required double top,
-    required double width,
-  }) {
-    return Positioned(
-      left: left,
-      top: top,
-      child: Transform.rotate(
-        angle: -1.57,
-        child: Container(
-          width: width,
-          height: 0,
-          decoration: ShapeDecoration(
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 3,
-                color: const Color(0xFFF0EFFA),
-              ),
-            ),
-          ),
+          ],
         ),
       ),
     );

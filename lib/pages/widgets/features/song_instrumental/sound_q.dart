@@ -47,7 +47,7 @@ class SoundQuality extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
-                    OriginalRecordingWidget(),
+                    NetworkAudioPlayer(audioUrl: '',),
                     CleanedRecordingWidget(),
                   ],
                 ),
@@ -88,7 +88,7 @@ class SoundQuality extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const OriginalRecordingWidget(),
+            const NetworkAudioPlayer(audioUrl: 'https://drive.google.com/uc?export=download&id=1QyAJP1-5P_Qtn6A8lm69bvgEiAQZb9PQ',),
             const SizedBox(height: 16),
             const CleanedRecordingWidget(),
             const SizedBox(height: 32),

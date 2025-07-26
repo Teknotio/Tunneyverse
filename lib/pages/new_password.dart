@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:tuneyverse/pages/login_page.dart'; // <-- Replace with your path
 
 class NewPasswordPage extends StatelessWidget {
-  const NewPasswordPage({super.key});
+  final String email;
+  final String code;
+  
+  const NewPasswordPage({super.key, required this.email, required this.code});
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +20,8 @@ class NewPasswordPage extends StatelessWidget {
 
           return Column(
             children: [
-              // Header at the top
               SignUpHeader(isDesktop: isDesktop),
               SizedBox(height: isDesktop ? 48 : 24),
-
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(
@@ -34,9 +38,11 @@ class NewPasswordPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              _NewPasswordForm(isDesktop: isDesktop),
-                              SizedBox(height: isDesktop ? 32 : 20),
-                              _SetPasswordButton(isDesktop: isDesktop),
+                              _NewPasswordForm(
+                                isDesktop: isDesktop,
+                                email: email,
+                                code: code,
+                              ),
                             ],
                           ),
                         ),
@@ -54,7 +60,6 @@ class NewPasswordPage extends StatelessWidget {
   }
 }
 
-// --- Reuse your header ---
 class SignUpHeader extends StatelessWidget {
   final bool isDesktop;
   const SignUpHeader({super.key, required this.isDesktop});
@@ -144,7 +149,13 @@ class _NewPasswordHeader extends StatelessWidget {
 
 class _NewPasswordForm extends StatefulWidget {
   final bool isDesktop;
-  const _NewPasswordForm({required this.isDesktop});
+  final String email;
+  final String code;
+  const _NewPasswordForm({
+    required this.isDesktop,
+    required this.email,
+    required this.code,
+  });
   @override
   State<_NewPasswordForm> createState() => _NewPasswordFormState();
 }
@@ -152,53 +163,46 @@ class _NewPasswordForm extends StatefulWidget {
 class _NewPasswordFormState extends State<_NewPasswordForm> {
   bool obscurePassword = true;
   bool obscureConfirm = true;
-
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmController = TextEditingController();
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = widget.isDesktop;
+    final passwordsMatch =
+        passwordController.text == confirmController.text && passwordController.text.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Create Password',
-          style: TextStyle(
-            color: const Color(0xFF303030),
-            fontSize: 14,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w400,
-          ),
-        ),
+        Text('Create Password', style: TextStyle(
+          color: const Color(0xFF303030),
+          fontSize: 14, fontFamily: 'Poppins', fontWeight: FontWeight.w400,
+        )),
         SizedBox(height: 8),
         TextField(
           controller: passwordController,
           obscureText: obscurePassword,
+          onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
             hintText: 'Enter Password ',
             hintStyle: TextStyle(
               color: const Color(0xFF1C1B1F).withOpacity(0.5),
-              fontSize: 16,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w400,
+              fontSize: 16, fontFamily: 'Poppins', fontWeight: FontWeight.w400,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(
-                color: Color(0xFF79747E),
-              ),
+              borderSide: const BorderSide(color: Color(0xFF79747E)),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            filled: true,
-            fillColor: Colors.white,
+            filled: true, fillColor: Colors.white,
             suffixIcon: IconButton(
               icon: Icon(
                 obscurePassword ? Icons.visibility_off : Icons.visibility,
                 color: Colors.grey,
               ),
-              onPressed: () =>
-                  setState(() => obscurePassword = !obscurePassword),
+              onPressed: () => setState(() => obscurePassword = !obscurePassword),
             ),
           ),
           style: TextStyle(
@@ -209,43 +213,33 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
           ),
         ),
         SizedBox(height: 24),
-        Text(
-          'Re-enter Password',
-          style: TextStyle(
-            color: const Color(0xFF303030),
-            fontSize: 14,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w400,
-          ),
-        ),
+        Text('Re-enter Password', style: TextStyle(
+          color: const Color(0xFF303030),
+          fontSize: 14, fontFamily: 'Poppins', fontWeight: FontWeight.w400,
+        )),
         SizedBox(height: 8),
         TextField(
           controller: confirmController,
           obscureText: obscureConfirm,
+          onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
             hintText: 'Enter Password ',
             hintStyle: TextStyle(
               color: const Color(0xFF1C1B1F).withOpacity(0.5),
-              fontSize: 16,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w400,
+              fontSize: 16, fontFamily: 'Poppins', fontWeight: FontWeight.w400,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(
-                color: Color(0xFF79747E),
-              ),
+              borderSide: const BorderSide(color: Color(0xFF79747E)),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            filled: true,
-            fillColor: Colors.white,
+            filled: true, fillColor: Colors.white,
             suffixIcon: IconButton(
               icon: Icon(
                 obscureConfirm ? Icons.visibility_off : Icons.visibility,
                 color: Colors.grey,
               ),
-              onPressed: () =>
-                  setState(() => obscureConfirm = !obscureConfirm),
+              onPressed: () => setState(() => obscureConfirm = !obscureConfirm),
             ),
           ),
           style: TextStyle(
@@ -255,63 +249,83 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
             fontWeight: FontWeight.w400,
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _SetPasswordButton extends StatelessWidget {
-  final bool isDesktop;
-  const _SetPasswordButton({required this.isDesktop});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          // TODO: Add set password logic here
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF40367B),
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(2),
-            side: const BorderSide(
-              width: 1,
-              color: Color(0xFF251F48),
+        SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: !passwordsMatch || loading
+                ? null
+                : () async {
+                    setState(() => loading = true);
+                    final payload = {
+                        "code": widget.code,
+                        "email": widget.email,
+                        "new_password": passwordController.text,
+                      };
+                    print('Sending payload: $payload'); // ✅ Debug print
+                    final response = await http.post(
+                      Uri.parse('https://api.tuneyverse.com/auth/reset-password'),
+                      headers: {'Content-Type': 'application/json'},
+                      body: jsonEncode(payload),
+                    );
+                    print('Status code: ${response.statusCode}'); // ✅ Debug print
+                    print('Response body: ${response.body}');     // ✅ Debug print
+                                setState(() => loading = false);
+                    if (response.statusCode == 200) {
+                      if (!mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => SignInPage()), // Use your real SignInPage
+                        (route) => false,
+                      );
+                    } else {
+                      final Map<String, dynamic>? body = response.body.isNotEmpty
+                        ? jsonDecode(response.body)
+                        : null;
+                      final message = body?['message'] ??
+                          'Failed to set password. Please try again.';
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(message)),
+                      );
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF40367B),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(2),
+                side: const BorderSide(width: 1, color: Color(0xFF251F48)),
+              ),
+              elevation: 0,
+            ),
+            child: loading
+                ? SizedBox(
+                    height: 22, width: 22,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : Text(
+                    'SET PASSWORD',
+                    style: TextStyle(
+                      letterSpacing: 1.5,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
+          ),
+        ),
+        if (passwordController.text.isNotEmpty &&
+            confirmController.text.isNotEmpty &&
+            passwordController.text != confirmController.text)
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Text(
+              "Passwords do not match.",
+              style: TextStyle(color: Colors.red, fontSize: 14),
             ),
           ),
-          elevation: 0,
-        ),
-        child: Text(
-          'SET PASSWORD',
-          style: TextStyle(
-            letterSpacing: 1.5,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// For demo/testing
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Set Password Demo',
-      debugShowCheckedModeBanner: false,
-      home: NewPasswordPage(),
+      ],
     );
   }
 }

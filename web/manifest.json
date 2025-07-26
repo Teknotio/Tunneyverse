@@ -1,11 +1,11 @@
 {
-    "name": "sound_project",
-    "short_name": "sound_project",
+    "name": "Tuneyverse",
+    "short_name": "Tuneyverse",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Tuneyverse is a platform for musicians to share and monetize their music.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

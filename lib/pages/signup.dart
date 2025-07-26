@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tuneyverse/pages/login_page.dart';
 import 'package:tuneyverse/pages/signup_otp.dart'; // <-- Add this line!
+import 'package:http/http.dart' as http;   // <-- Added for HTTP requests
+import 'dart:convert'; 
 
 class SignUpPage extends StatelessWidget {
   const SignUpPage({super.key});
@@ -242,14 +244,107 @@ class _SignUpFormState extends State<_SignUpForm> {
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
 
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+
+  bool isLoading = false;
+  String? errorMessage;
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSignUp() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    final name = nameController.text.trim();
+    final username = usernameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
+
+    // Validate
+    if (name.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      setState(() {
+        errorMessage = "All fields are required!";
+        isLoading = false;
+      });
+      return;
+    }
+    if (password != confirmPassword) {
+      setState(() {
+        errorMessage = "Passwords do not match!";
+        isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.tuneyverse.com/auth/signup'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "email": email,
+          "full_name": name,
+          "password": password,
+          "role": "user",
+          "username": username,
+        }),
+      );
+
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Success! Move to OTP
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => OtpVerifyPage(email: email)),
+        );
+      } else {
+        setState(() {
+          // Try to extract backend error message
+          String message = 'Registration failed!';
+          try {
+            final resp = json.decode(response.body);
+            if (resp is Map && resp['message'] != null) {
+              message = resp['message'].toString();
+            }
+          } catch (_) {}
+          errorMessage = message;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "Network error. Please try again!";
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDesktop = widget.isDesktop;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Name
         Text(
-          'Email address or username',
+          'Name',
           style: TextStyle(
             color: Colors.black,
             fontSize: 13,
@@ -259,8 +354,9 @@ class _SignUpFormState extends State<_SignUpForm> {
         ),
         SizedBox(height: 8),
         TextField(
+          controller: nameController,
           decoration: InputDecoration(
-            hintText: 'Email address or username',
+            hintText: 'Name',
             hintStyle: TextStyle(
               color: const Color(0xFF6A6A6A),
               fontSize: 15,
@@ -276,6 +372,69 @@ class _SignUpFormState extends State<_SignUpForm> {
           ),
         ),
         SizedBox(height: 20),
+        // Username
+        Text(
+          'Username',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 13,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: 8),
+        TextField(
+          controller: usernameController,
+          decoration: InputDecoration(
+            hintText: 'Username',
+            hintStyle: TextStyle(
+              color: const Color(0xFF6A6A6A),
+              fontSize: 15,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 20),
+
+        // Email
+        Text(
+          'Email address',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 13,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: 8),
+        TextField(
+          controller: emailController,
+          decoration: InputDecoration(
+            hintText: 'Email address',
+            hintStyle: TextStyle(
+              color: const Color(0xFF6A6A6A),
+              fontSize: 15,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 20),
+
+        // Password
         Text(
           'Password',
           style: TextStyle(
@@ -287,6 +446,7 @@ class _SignUpFormState extends State<_SignUpForm> {
         ),
         SizedBox(height: 8),
         TextField(
+          controller: passwordController,
           obscureText: obscurePassword,
           decoration: InputDecoration(
             hintText: 'Password',
@@ -312,6 +472,8 @@ class _SignUpFormState extends State<_SignUpForm> {
           ),
         ),
         SizedBox(height: 20),
+
+        // Confirm Password
         Text(
           'Confirm Password',
           style: TextStyle(
@@ -323,6 +485,7 @@ class _SignUpFormState extends State<_SignUpForm> {
         ),
         SizedBox(height: 8),
         TextField(
+          controller: confirmPasswordController,
           obscureText: obscureConfirmPassword,
           decoration: InputDecoration(
             hintText: 'Password',
@@ -349,15 +512,26 @@ class _SignUpFormState extends State<_SignUpForm> {
           ),
         ),
         SizedBox(height: isDesktop ? 24 : 16),
+
+        // Error message
+        if (errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              errorMessage!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+
+        // Loading indicator
+        if (isLoading)
+          Center(child: CircularProgressIndicator()),
+
+        // SIGN UP BUTTON
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const OtpVerifyPage()),
-              );
-            },
+            onPressed: isLoading ? null : _handleSignUp,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF40367B),
               foregroundColor: Colors.white,
@@ -386,6 +560,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     );
   }
 }
+
 
 class _SignInDivider extends StatelessWidget {
   final bool isDesktop;

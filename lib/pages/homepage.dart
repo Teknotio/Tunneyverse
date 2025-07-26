@@ -22,10 +22,9 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0EFFA),
-      // ---- ADD END DRAWER HERE ----
       endDrawer: AppDrawer(
         onHome: () {
-          // Already home, do nothing or scroll to top
+          // Do nothing or scroll to top
         },
         onPricing: () {
           Navigator.of(context).push(
@@ -57,59 +56,59 @@ class HomePage extends StatelessWidget {
           );
         },
       ),
-      body: Column(
-        children: [
-          ResponsiveHeader(
-            onHome: () {
-              // Already home, do nothing or scroll to top
-            },
-            onPricing: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PricingPage()),
-              );
-            },
-            onAboutUs: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AboutUs()),
-              );
-            },
-            onContactUs: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ContactPage()),
-              );
-            },
-            onLogin: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignInPage()),
-              );
-            },
-            onSignUp: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignUpPage()),
-              );
-            },
-          ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: const [
-                HeroSection(),
-                UploadSection(),
-                ExtractSection(),
-                StudioSection(),
-                AiWidgetSection(),
-                InnovativeSection(),
-                PricingSection(),
-                FAQSection(),
-                ResponsiveFooter(),
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            ResponsiveHeader(
+              onHome: () {},
+              onPricing: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PricingPage()),
+                );
+              },
+              onAboutUs: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutUs()),
+                );
+              },
+              onContactUs: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ContactPage()),
+                );
+              },
+              onLogin: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SignInPage()),
+                );
+              },
+              onSignUp: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SignUpPage()),
+                );
+              },
             ),
-          ),
-        ],
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: const [
+                  HeroSection(),
+                  UploadSection(),
+                  ExtractSection(),
+                  StudioSection(),
+                  AiWidgetSection(),
+                  InnovativeSection(),
+                  PricingSection(),
+                  FAQSection(),
+                  ResponsiveFooter(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

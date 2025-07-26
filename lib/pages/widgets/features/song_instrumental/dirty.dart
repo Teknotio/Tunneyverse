@@ -3,7 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 
 class OriginalRecording extends StatefulWidget {
-  const OriginalRecording({Key? key}) : super(key: key);
+  const OriginalRecording({super.key});
 
   @override
   State<OriginalRecording> createState() => _OriginalRecordingState();
