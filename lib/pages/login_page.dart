@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuneyverse/pages/chorus_and_instrumental/user_dashboard.dart';
 import 'package:tuneyverse/pages/forgot_password.dart';
 import 'package:tuneyverse/pages/signup.dart';
 import 'package:http/http.dart' as http;  // <-- ADDED
@@ -297,12 +298,11 @@ class _SignInFormState extends State<_SignInForm> {
       print("Status: ${response.statusCode}, Body: ${response.body}"); // for debugging
 
       if (response.statusCode == 200) {
-        // Login successful!
-        // You can store token or user info here if returned by backend
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login successful!')));
-        // TODO: Navigate to dashboard or home page here
-      } else {
+          Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomepageDashboard()),
+          );
+        } else {
         setState(() {
           String message = 'Login failed!';
           try {
@@ -626,23 +626,6 @@ class _SignUpPrompt extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sign In Demo',
-      debugShowCheckedModeBanner: false,
-      home: SignInPage(),
     );
   }
 }

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: MusicListDashboard(),
-  ));
-}
+import 'package:http/http.dart' as http;
+import 'package:tuneyverse/pages/chorus_and_instrumental/upload_card.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 
 
@@ -14,17 +12,20 @@ class MusicItem {
   final String title;
   final String artist;
   final String duration;
+  final String? downloadUrl; // <-- add this
 
   MusicItem({
     required this.coverUrl,
     required this.title,
     required this.artist,
     required this.duration,
+    this.downloadUrl,
   });
 }
 
 class MusicListDashboard extends StatefulWidget {
-  const MusicListDashboard({super.key});
+  final String feature;
+  const MusicListDashboard({Key? key, required this.feature}) : super(key: key);
 
   @override
   State<MusicListDashboard> createState() => _MusicListDashboardState();
@@ -32,39 +33,32 @@ class MusicListDashboard extends StatefulWidget {
 
 class _MusicListDashboardState extends State<MusicListDashboard> {
   // Sample demo music list
-  final List<MusicItem> musicItems = [
-    MusicItem(
-      coverUrl: 'assets/images/artwork.png',
-      title: "Die for You",
-      artist: "The Weeknd",
-      duration: "03:20",
-    ),
-    MusicItem(
-      coverUrl: 'assets/images/artwork.png',
-      title: "Save Your Tears",
-      artist: "The Weeknd",
-      duration: "03:45",
-    ),
-    MusicItem(
-      coverUrl: 'assets/images/artwork.png',
-      title: "Starboy",
-      artist: "The Weeknd",
-      duration: "03:50",
-    ),
-    MusicItem(
-      coverUrl: 'assets/images/artwork.png',
-      title: "Someone Like You",
-      artist: "Adele",
-      duration: "04:21",
-    ),
-    MusicItem(
-      coverUrl: 'assets/images/artwork.png',
-      title: "Hello",
-      artist: "Adele",
-      duration: "03:59",
-    ),
-    
-  ];
+List<MusicItem> musicItems = [];
+
+  @override
+void initState() {
+  super.initState();
+  fetchFilesForFeature(widget.feature);
+}
+
+void fetchFilesForFeature(String feature) async {
+  final response = await http.get(
+    Uri.parse('https://api.tuneyverse.com/upload/files?feature=${Uri.encodeComponent(feature)}'),
+  );
+  if (response.statusCode == 200) {
+    final List<dynamic> files = jsonDecode(response.body);
+    setState(() {
+      musicItems = files.map((f) => MusicItem(
+        coverUrl: 'assets/images/artwork.png', // Or from f if you return it from backend
+        title: f['title'] ?? f['filename'] ?? 'Unknown',
+        artist: f['artist'] ?? '',
+        duration: f['duration'] ?? '',
+        // Optionally add a download URL field
+        downloadUrl: f['downloadUrl'], // <-- Add this property to MusicItem class!
+      )).toList();
+    });
+  }
+}
 
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -443,7 +437,19 @@ class DashboardContentMobile extends StatelessWidget {
                   horizontal: scale(12),
                   vertical: scale(6),
                 ),
-                onTap: () {},
+                onTap: () async {
+  // Navigate to Upload Page
+  final uploaded = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => UploadCard(sectionIndex: 0)), // replace with your upload page
+  );
+  if (uploaded == true) {
+    // Call parent dashboard's fetchFilesForFeature!
+    // To do this, use a callback or use a global key/state management, or lift the callback up to parent.
+    // Easiest: Add a VoidCallback onUploaded prop to DashboardContentMobile.
+    // For now, I’ll show the best way below.
+  }
+},
               ),
             ],
           ),
@@ -1192,7 +1198,15 @@ class _DashboardContent extends StatelessWidget {
                 SizedBox(
                   height: 50,
                   child: UploadButton(
-                    onPressed: () {},
+                    onPressed: () async {
+  final uploaded = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => UploadCard(sectionIndex: 0)),
+  );
+  if (uploaded == true) {
+    // Same as above: call fetchFilesForFeature!
+  }
+},
                     borderColor: const Color(0xFF2A2E44),
                     iconColor: Colors.white,
                     textColor: Colors.white,
@@ -1345,7 +1359,17 @@ class _MusicListItem extends StatelessWidget {
             ),
             const SizedBox(width: 24),
             // Options icon
-            Container(
+            InkWell(
+            onTap: item.downloadUrl != null
+                ? () async {
+                    // Download logic (open in browser, etc.)
+                    final url = item.downloadUrl!;
+                    if (await canLaunchUrl(Uri.parse(url))) {
+                      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                    }
+                  }
+                : null,
+            child: Container(
               width: 32,
               height: 32,
               decoration: ShapeDecoration(
@@ -1356,8 +1380,9 @@ class _MusicListItem extends StatelessWidget {
                   ),
                 ),
               ),
-              child: const Icon(Icons.arrow_downward, color: Color(0xFFE9E6F8), size: 20),
+              child: Icon(Icons.arrow_downward, color: Color(0xFFE9E6F8), size: 20),
             ),
+          ),
             const SizedBox(width: 16),
           ],
         ),

@@ -4,6 +4,9 @@ import 'package:tuneyverse/pages/chorus_and_instrumental/user_dashboard.dart';
 import 'package:tuneyverse/pages/widgets/contact_us.dart';
 import 'package:tuneyverse/pages/widgets/faq_section.dart';
 import 'package:tuneyverse/pages/widgets/pricing_sectiont.dart';
+import 'package:http/http.dart' as http;  // <-- ADDED
+import 'dart:convert';                     // <-- ADDED
+
 
 void main() {
   runApp(const MaterialApp(
@@ -24,6 +27,37 @@ enum DashboardSection { sidebar, support, accountsettings}
 
 class _AccountSettingsState extends State<AccountSettings> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
+
+  String? fullName;
+  String? email;
+  String? username;
+  String password = '********';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    final response = await http.get(
+      Uri.parse('https://api.tuneyverse.com/auth/me'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        fullName = data['full_name'];
+        email = data['email'];
+        username = data['username'];
+        password = data['password'];
+      });
+    } else {
+      print('Failed to load user data: \${response.statusCode}');
+    }
+  }
 
   int selectedIndex = 0;
 
@@ -432,11 +466,19 @@ class DrawerMenu extends StatelessWidget {
 class DashboardContentMobile extends StatelessWidget {
   final String title;
   final int sectionIndex;
+  final String? username;
+  final String? fullName;
+  final String? email;
+  final String? password;
 
   const DashboardContentMobile({
     super.key,
     required this.title,
     required this.sectionIndex,
+    this.username,
+    this.fullName,
+    this.email,
+    this.password = '********',
   });
 
   @override
@@ -483,7 +525,7 @@ class DashboardContentMobile extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    'Jonathan Freeman',
+                    fullName ?? 'Unknown',
                     style: TextStyle(
                       color: const Color(0xFF30285C),
                       fontSize: scale(22),
@@ -493,7 +535,7 @@ class DashboardContentMobile extends StatelessWidget {
                   ),
                   SizedBox(height: scale(2)),
                   Text(
-                    'jonathanfreeman@gmail.com',
+                    email ?? '',
                     style: TextStyle(
                       color: const Color(0xFF30285C),
                       fontSize: scale(13),
@@ -521,19 +563,19 @@ class DashboardContentMobile extends StatelessWidget {
                 children: [
                   _mobileAccountRow(
                     label: 'Username',
-                    value: 'Jonathan Freeman',
+                    value: username ?? '',
                     scale: scale,
                   ),
                   SizedBox(height: scale(18)),
                   _mobileAccountRow(
                     label: 'Email',
-                    value: 'jonathanfreeman@gmail.com',
+                    value: email ?? '',
                     scale: scale,
                   ),
                   SizedBox(height: scale(18)),
                   _mobileAccountRow(
                     label: 'Password',
-                    value: '************',
+                    value: password ?? '',
                     scale: scale,
                   ),
                 ],
@@ -868,7 +910,8 @@ class _SidebarItemState extends State<_SidebarItem> {
 class UserDashboardSidebarUserInfo extends StatefulWidget {
   final VoidCallback? onSupport;
   final VoidCallback? onAccountSettings;
-  const UserDashboardSidebarUserInfo({super.key, this.onSupport, this.onAccountSettings});
+  final String? username;
+  const UserDashboardSidebarUserInfo({super.key, this.onSupport, this.onAccountSettings, this.username});
 
 
 
@@ -978,7 +1021,7 @@ class _UserDashboardSidebarUserInfoState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Jonathan Freeman',
+                        widget.username ?? '',
                         style: const TextStyle(
                           color: Color(0xFFF0EFFA),
                           fontSize: 15,
@@ -1150,11 +1193,17 @@ class _DropdownMenuItem {
 class _DashboardContent extends StatelessWidget {
   final String title;
   final int sectionIndex;
+  final String? username;
+  final String? fullName;
+  final String? email;
 
   const _DashboardContent({
     super.key,
     required this.title,
     required this.sectionIndex,
+    this.username,
+    this.fullName,
+    this.email,
   });
 
   @override
@@ -1222,8 +1271,8 @@ class _DashboardContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 22),
                   // Name
-                  const Text(
-                    'Jonathan Freeman',
+                  Text(
+                    fullName ?? 'Loading...',
                     style: TextStyle(
                       color: Color(0xFF30285C),
                       fontSize: 32,
@@ -1233,8 +1282,8 @@ class _DashboardContent extends StatelessWidget {
                     ),
                   ),
                   // Email
-                  const Text(
-                    'jonathanfreeman@gmail.com',
+                  Text(
+                    email ?? '',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Color(0xFF30285C),
@@ -1259,11 +1308,11 @@ class _DashboardContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _accountRow(label: 'Username', value: 'Jonathan Freeman'),
+                        _accountRow(label: 'Username', value: username ?? ''),
                         const SizedBox(height: 24),
-                        _accountRow(label: 'Email', value: 'jonathanfreeman@gmail.com'),
+                        _accountRow(label: 'Email', value: email ?? ''),
                         const SizedBox(height: 24),
-                        _accountRow(label: 'Password', value: '************'),
+                        _accountRow(label: 'Password', value: '********'),
                       ],
                     ),
                   ),

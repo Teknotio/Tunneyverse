@@ -9,21 +9,22 @@ import 'package:tuneyverse/pages/chorus_and_instrumental/account_settings.dart';
 void main() {
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: HomepageDashboard(),
+    home: FeatureSection(),
   ));
 }
 
-class HomepageDashboard extends StatefulWidget {
-  const HomepageDashboard({super.key});
+class FeatureSection extends StatefulWidget {
+  const FeatureSection({super.key});
 
   @override
-  State<HomepageDashboard> createState() => _HomepageDashboardState();
+  State<FeatureSection> createState() => _FeatureSectionState();
 }
+
 
 enum DashboardSection { sidebar, support }
 
 
-class _HomepageDashboardState extends State<HomepageDashboard> {
+class _FeatureSectionState extends State<FeatureSection> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   int selectedIndex = 0;
