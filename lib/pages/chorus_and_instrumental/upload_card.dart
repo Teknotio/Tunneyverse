@@ -1262,4 +1262,3 @@ class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
         );
 }
 
-
